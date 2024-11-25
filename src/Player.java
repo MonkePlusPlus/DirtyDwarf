@@ -49,18 +49,18 @@ public class Player {
 	
 	public void update(){
 		if (key.up){
-			System.out.println("move up");
+			//System.out.println("move up");
 		}
 		if (key.down){
-			System.out.println("move down");
+			//System.out.println("move down");
 		}
 		if (key.left){
 			image = imageTile.getSubimage(0, 0, 24, 24);
-			System.out.println("move left");
+			//System.out.println("move left");
 		}
 		if (key.right){
 			image = imageTile.getSubimage(24, 0, 24, 24);
-			System.out.println("move right");
+			//System.out.println("move right");
 		}
 	}
 

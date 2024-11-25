@@ -3,30 +3,22 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 public class Block {
+	private Data data;
 	private boolean collision;
 	private BufferedImage image;
-	private int width;
-	private int height;
-	private int size;
-	private int speed;
 	private int x;
 	private int y;
 	private int posY;
 	private int posX;
-	KeyHandler key;
 
-	public Block(int width, int height, int size, int x, int y, boolean col, BufferedImage image, KeyHandler key, int speed){
-		this.width = width;
-		this.height = height;
-		this.size = size;
+	public Block(Data data, int x, int y, boolean col, BufferedImage image){
+		this.data = data;
 		this.x = x;
 		this.y = y;
 		this.collision = col;
 		this.image = image;
-		this.posX = x * size;
-		this.posY = y * size;
-		this.key = key;
-		this.speed = speed;
+		this.posX = x * data.size;
+		this.posY = y * data.size;
 	}
 
 	public void moveBlockX(int speed){
@@ -38,19 +30,19 @@ public class Block {
 	}
 
 	public void drawBlock(Graphics2D g){
-		if (posX >= -48 && posX <= width + 48 &&
-			posY >= -48 && posY <= height + 48 && image != null) {
+		if (posX >= -48 && posX <= data.width + 48 &&
+			posY >= -48 && posY <= data.height + 48 && image != null) {
 			g.drawImage(image, posX, posY, null);
 		}
 	}
 
 	public void InitializePos(int startX, int startY){
-		int centerX = width / 2 - (size / 2);
-		int centerY = height / 2 - (size / 2);
+		int centerX = data.width / 2 - (data.size / 2);
+		int centerY = data.height / 2 - (data.size / 2);
 		x = x - startX;
 		y = y - startY;
-		posX = centerX + (x * size);
-		posY = centerY + (y * size);
+		posX = centerX + (x * data.size);
+		posY = centerY + (y * data.size);
 	}
 
 	public void setX(int x){

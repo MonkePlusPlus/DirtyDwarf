@@ -8,28 +8,27 @@ import javax.imageio.ImageIO;
 
 public class Map {
 	
-	private int width;
-	private int height;
+	private Data data;
 	private Game game;
 	private File fileMap;
 	private String[][] stringMap;
 	private Block[][] blockMap;
-	private int sizeTile;
+	private Object[][] listObject;
 	private int lenX = 0;
 	private int lenY = 0;
 	private int startPosX;
 	private int startPosY;
-	private int speed;
+	private int centerX;
+	private int centerY;
+	private int updateX = 0;
+	private int updateY = 0;
 	private BufferedImage tiles;
-	KeyHandler key;
 
 	public Map(int width, int height, File file, int size, KeyHandler k, int speed){
-		this.width = width;
-		this.height = height;
+		this.data = new Data(width, height, size, speed, k);
+		this.centerX = width / 2 - (size / 2);
+		this.centerY = height / 2 - (size / 2);
 		this.fileMap = file;
-		this.sizeTile = size;
-		this.key = k;
-		this.speed = speed;
 	}
 
 	public boolean InitializeMap(){
@@ -39,22 +38,32 @@ public class Map {
 			e.printStackTrace();
 		}
 		InitializeStringMap();
+		InitializeObject();
 		blockMap = new Block[lenY][lenX];
 		System.out.println("x : " + lenX + " y : " + lenY);
 		for (int i = 0; i < lenY; i++){
 			for (int j = 0; j < lenX; j++){
 				if (stringMap[i][j].equals("1")) {
-					blockMap[i][j] = new Block(width, height, sizeTile, j, i, true, tiles.getSubimage(sizeTile, 0, sizeTile, sizeTile), key, speed);
+					blockMap[i][j] = new Block(data, j, i, true, tiles.getSubimage(data.size, 0, data.size, data.size));
 				} else if (stringMap[i][j].equals("0")) {
-					blockMap[i][j] = new Block(width, height, sizeTile, j, i, false, tiles.getSubimage(0, 0, sizeTile, sizeTile), key, speed);
+					blockMap[i][j] = new Block(data, j, i, false, tiles.getSubimage(0, 0, data.size, data.size));
 				} else if (stringMap[i][j].equals("P")){
 					startPosX = j;
 					startPosY = i;
-					blockMap[i][j] = new Block(width, height, sizeTile, j, i, false, tiles.getSubimage(sizeTile * 2, 0, 48, 48), key, speed);
+					blockMap[i][j] = new Block(data, j, i, false, tiles.getSubimage(data.size * 2, 0, data.size, data.size));
 				} else if (stringMap[i][j].equals("N")) {
-					blockMap[i][j] = new Block(width, height, sizeTile, j, i, true, null, key, speed);
+					blockMap[i][j] = new Block(data, j, i, true, null);
 				} else {
-					return false;
+					int index = 0;
+					for (Object o : listObject[0]){
+						if (stringMap[i][j].equals(o.getSymb())){
+							blockMap[i][j] = new Ressource(o, data, j, i, true, tiles.getSubimage(data.size * index, data.size, data.size, data.size));
+							break ;
+						}
+						index++;
+					}
+					if (blockMap[i][j] == null)
+						return false;
 				}
 			}
 		}
@@ -72,13 +81,15 @@ public class Map {
 
 	public boolean InitializeStringMap(){
 		Scanner scan;
+		String line = "";
 		String[] tabLine;
 
 		System.out.println("Initialing map");
 		try {
 			scan = new Scanner(fileMap);
-			while (scan.hasNextLine()){
-				scan.nextLine();
+			line = scan.nextLine();
+			while (scan.hasNextLine() && line.equals("ENDMAP") == false){
+				line = scan.nextLine();
 				lenY++;
 			}
 			scan.close();
@@ -103,6 +114,47 @@ public class Map {
 		return true;
 	}
 
+	public boolean InitializeObject(){
+		Scanner scan;
+		String line = "";
+		String[] tabObject;
+		String[] tabRecipe;
+		String[] tab;
+		int i = 0;
+
+		System.out.println("Initialing map");
+		try {
+			scan = new Scanner(fileMap);
+			while (scan.hasNextLine() && line.equals("ENDMAP") == false){
+				line = scan.nextLine();
+			}
+			line = scan.nextLine();
+			tabObject = (line.split(":"))[1].split("_");
+			line = scan.nextLine();
+			tabRecipe = (line.split(":"))[1].split("_");
+			listObject = new Object[2][];
+			listObject[0] = new Object[tabObject.length];
+			listObject[1] = new Object[tabRecipe.length];
+			for (String s : tabObject){
+				tab = s.split(";");
+				listObject[0][i] = new Object(tab[0], tab[1], Integer.valueOf(tab[2]), null);
+				i++;
+			}
+			i = 0;
+			for (String s : tabRecipe){
+				tab = s.split(";");
+				listObject[1][i] = new Recipe(tab[0], tab[1], null, Integer.valueOf(tab[2]), null);
+				i++;
+			}
+			System.out.println();
+			scan.close();
+		} catch (FileNotFoundException e){
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
 	public void drawMap(Graphics2D g){
 		for (int i = 0; i < lenY; i++){
 			for (Block b : blockMap[i]){
@@ -112,17 +164,25 @@ public class Map {
 	}
 
 	public void update(){
-		if (key.up){
+		if (data.key.up){
 			moveUp();
+			if (checkCollision() == false)
+				moveDown();
 		}
-		if (key.down){
+		if (data.key.down){
 			moveDown();
+			if (checkCollision() == false)
+				moveUp();
 		}
-		if (key.left){
+		if (data.key.left){
 			moveLeft();
+			if (checkCollision() == false)
+				moveRight();
 		}
-		if (key.right){
+		if (data.key.right){
 			moveRight();
+			if (checkCollision() == false)
+				moveLeft();
 		}
 	}
 
@@ -137,45 +197,58 @@ public class Map {
 	}
 
 	public void moveUp(){
-		if (collisionUp()){
-			for (int i = 0; i < lenX; i++){
-				for (Block b : blockMap[i]){
-					b.moveBlockY(speed);
-				}
+		for (int i = 0; i < lenY; i++){
+			for (Block b : blockMap[i]){
+				b.moveBlockY(data.speed);
 			}
 		}
+		updateY += data.speed;
 	}
 
 	public void moveDown(){
-		if (collisionDown()) {
-			for (int i = 0; i < lenX; i++){
-				for (Block b : blockMap[i]){
-					b.moveBlockY(-speed);
-				}
+		for (int i = 0; i < lenY; i++){
+			for (Block b : blockMap[i]){
+				b.moveBlockY(-data.speed);
 			}
 		}
+		updateY -= data.speed;
 	}
 
 	public void moveLeft(){
-		if (collisionLeft()) {
-			for (int i = 0; i < lenX; i++){
-				for (Block b : blockMap[i]){
-					b.moveBlockX(speed);
-				}
+		for (int i = 0; i < lenY; i++){
+			for (Block b : blockMap[i]){
+				b.moveBlockX(data.speed);
 			}
 		}
+		updateX += data.speed;
 	}
 
 	public void moveRight(){
-		if (collisionRight()) {
-			for (int i = 0; i < lenX; i++){
-				for (Block b : blockMap[i]){
-					b.moveBlockX(-speed);
-				}
+		for (int i = 0; i < lenY; i++){
+			for (Block b : blockMap[i]){
+				b.moveBlockX(-data.speed);
 			}
 		}
+		updateX -= data.speed;
 	}
 
+	public boolean checkCollision(){
+		for (int i = 0; i < lenY; i++){
+			for (Block b : blockMap[i]){
+				if (b.getCollission() == true) {
+					if (b.getPosY() > data.height / 2 - (data.size / 2) - 48 &&
+						b.getPosY() < data.height / 2 + (data.size / 2) &&
+						b.getPosX() > data.width / 2 - (data.size / 2) - 48 &&
+						b.getPosX() < data.width / 2 + (data.size / 2)){
+						return false;
+					}
+				}
+			}
+		}		
+		return true;
+	}
+
+	/* 
 	public boolean collisionUp(){
 		for (int i = 0; i < lenX; i++){
 			for (Block b : blockMap[i]){
@@ -205,7 +278,8 @@ public class Map {
 				}
 			}
 		}
-		return true;	}
+		return true;	
+	}
 
 
 	public boolean collisionLeft(){
@@ -240,4 +314,5 @@ public class Map {
 		}
 		return true;	
 	}
+		*/
 }

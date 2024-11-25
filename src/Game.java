@@ -4,22 +4,19 @@ import javax.swing.*;
 
 public class Game extends JPanel {
 
-	private int width;
-	private int height;
+	private Data data;
 	private Map map;
-	KeyHandler key = new KeyHandler();
 	private Player player;
 
 	public Game(int width, int height) {
 		super();
-		this.width = width;
-		this.height = height;
-		this.player = new Player(width, height, key, 48);
-		this.map = new Map(width, height, new File("save/maptest.txt"), 48, key, 4);
+		this.data = new Data(width, height, 48, 4, new KeyHandler());
+		this.player = new Player(data);
+		this.map = new Map(data, new File("save/maptest.txt"));
 		setPreferredSize(new Dimension(width, height));
 		setBackground(Color.BLACK);
 		setDoubleBuffered(true);
-		addKeyListener(key);
+		addKeyListener(data.key);
 		setFocusable(true);
 	}
 

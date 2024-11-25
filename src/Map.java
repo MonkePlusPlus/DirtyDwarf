@@ -24,10 +24,10 @@ public class Map {
 	private int updateY = 0;
 	private BufferedImage tiles;
 
-	public Map(int width, int height, File file, int size, KeyHandler k, int speed){
-		this.data = new Data(width, height, size, speed, k);
-		this.centerX = width / 2 - (size / 2);
-		this.centerY = height / 2 - (size / 2);
+	public Map(Data data, File file){
+		this.data = data;
+		this.centerX = data.width / 2 - (data.size / 2);
+		this.centerY = data.height / 2 - (data.size / 2);
 		this.fileMap = file;
 	}
 

@@ -17,6 +17,7 @@ public class Player {
 	private BufferedImage imageTile;
 	private BufferedImage image;
 	private BufferedImage[][] animImage;
+	private Inventory inventory;
 
 	public Player(Data data){
 		this.data = data;
@@ -28,7 +29,8 @@ public class Player {
 		}
 	}
 
-	public void InitializePlayer(int x, int y, int speed){
+	public void InitializePlayer(int x, int y){
+		this.inventory = new Inventory();
 		this.x = data.width / 2 - (data.size / 2);
 		this.y = data.height / 2 - (data.size / 2);
 		this.posX = x;

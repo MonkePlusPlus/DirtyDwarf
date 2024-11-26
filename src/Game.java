@@ -26,7 +26,7 @@ public class Game extends JPanel {
 	}
 
 	public void InitializeGame(){
-		player.InitializePlayer(0, 0, 4);
+		player.InitializePlayer(0, 0);
 		map.InitializeMap();
 		map.printMap();
 	}

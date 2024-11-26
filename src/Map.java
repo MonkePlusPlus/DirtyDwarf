@@ -13,7 +13,7 @@ public class Map {
 	private File fileMap;
 	private String[][] stringMap;
 	private Block[][] blockMap;
-	private Object[][] listObject;
+	private Item[][] listItem;
 	private int lenX = 0;
 	private int lenY = 0;
 	private int startPosX;
@@ -22,6 +22,12 @@ public class Map {
 	private int centerY;
 	private int updateX = 0;
 	private int updateY = 0;
+	private int blockIndex = 0;
+	private int ressourceIndex = 1;
+	private int itemIndex = 2;
+	private int recipeIndex = 3;
+	private int coinIndex = 4; 
+
 	private BufferedImage tiles;
 
 	public Map(Data data, File file){
@@ -38,15 +44,15 @@ public class Map {
 			e.printStackTrace();
 		}
 		InitializeStringMap();
-		InitializeObject();
+		InitializeItem();
 		blockMap = new Block[lenY][lenX];
 		System.out.println("x : " + lenX + " y : " + lenY);
 		for (int i = 0; i < lenY; i++){
 			for (int j = 0; j < lenX; j++){
 				if (stringMap[i][j].equals("1")) {
-					blockMap[i][j] = new Block(data, j, i, true, tiles.getSubimage(data.size, 0, data.size, data.size));
+					blockMap[i][j] = new Block(data, j, i, true, tiles.getSubimage(data.size, data.size * blockIndex, data.size, data.size));
 				} else if (stringMap[i][j].equals("0")) {
-					blockMap[i][j] = new Block(data, j, i, false, tiles.getSubimage(0, 0, data.size, data.size));
+					blockMap[i][j] = new Block(data, j, i, false, tiles.getSubimage(0, data.size * blockIndex, data.size, data.size));
 				} else if (stringMap[i][j].equals("P")){
 					startPosX = j;
 					startPosY = i;
@@ -55,9 +61,10 @@ public class Map {
 					blockMap[i][j] = new Block(data, j, i, true, null);
 				} else {
 					int index = 0;
-					for (Object o : listObject[0]){
+					for (Item o : listItem[0]){
 						if (stringMap[i][j].equals(o.getSymb())){
-							blockMap[i][j] = new Ressource(o, data, j, i, true, tiles.getSubimage(data.size * index, data.size, data.size, data.size));
+							blockMap[i][j] = new Ressource(o, data, j, i, true, 
+											tiles.getSubimage(data.size * index, data.size * ressourceIndex, data.size, data.size));
 							break ;
 						}
 						index++;
@@ -114,10 +121,10 @@ public class Map {
 		return true;
 	}
 
-	public boolean InitializeObject(){
+	public boolean InitializeItem(){
 		Scanner scan;
 		String line = "";
-		String[] tabObject;
+		String[] tabItem;
 		String[] tabRecipe;
 		String[] tab;
 		int i = 0;
@@ -129,21 +136,23 @@ public class Map {
 				line = scan.nextLine();
 			}
 			line = scan.nextLine();
-			tabObject = (line.split(":"))[1].split("_");
+			tabItem = (line.split(":"))[1].split("_");
 			line = scan.nextLine();
 			tabRecipe = (line.split(":"))[1].split("_");
-			listObject = new Object[2][];
-			listObject[0] = new Object[tabObject.length];
-			listObject[1] = new Object[tabRecipe.length];
-			for (String s : tabObject){
+			listItem = new Item[2][];
+			listItem[0] = new Item[tabItem.length];
+			listItem[1] = new Item[tabRecipe.length];
+			for (String s : tabItem){
 				tab = s.split(";");
-				listObject[0][i] = new Object(tab[0], tab[1], Integer.valueOf(tab[2]), null);
+				listItem[0][i] = new Item(tab[0], tab[1], Integer.valueOf(tab[2]),
+								tiles.getSubimage(data.size * i, data.size * itemIndex, data.size, data.size));
 				i++;
 			}
 			i = 0;
 			for (String s : tabRecipe){
 				tab = s.split(";");
-				listObject[1][i] = new Recipe(tab[0], tab[1], null, Integer.valueOf(tab[2]), null);
+				listItem[1][i] = new Recipe(tab[0], tab[1], null, Integer.valueOf(tab[2]),
+								tiles.getSubimage(data.size * i, data.size * recipeIndex, data.size, data.size));
 				i++;
 			}
 			System.out.println();

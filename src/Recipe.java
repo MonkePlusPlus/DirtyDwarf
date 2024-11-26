@@ -1,7 +1,7 @@
 
 import java.awt.image.BufferedImage;
 
-public class Recipe extends Object {
+public class Recipe extends Item {
 	
 	String ingredient;
 

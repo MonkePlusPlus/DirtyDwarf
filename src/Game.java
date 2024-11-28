@@ -10,13 +10,14 @@ public class Game extends JPanel {
 
 	public Game(int width, int height) {
 		super();
-		this.data = new Data(width, height, 48, 4, new KeyHandler());
+		this.data = new Data(width, height, 48, 4, new KeyHandler(), this);
 		this.player = new Player(data);
 		this.map = new Map(data, new File("save/maptest.txt"));
 		setPreferredSize(new Dimension(width, height));
 		setBackground(Color.BLACK);
 		setDoubleBuffered(true);
 		addKeyListener(data.key);
+		setLayout(null);
 		setFocusable(true);
 	}
 
@@ -31,13 +32,17 @@ public class Game extends JPanel {
 		map.printMap();
 	}
 
+	public void drawGame(Graphics2D g2){
+		map.drawMap(g2);
+		player.draw(g2);
+	}
+
 	@Override
 	public void paintComponent(Graphics g){
 		Toolkit.getDefaultToolkit().sync();
 		super.paintComponent(g);
 
 		Graphics2D g2 = (Graphics2D)g;
-		map.drawMap(g2);
-		player.draw(g2);
+		drawGame(g2);
 	}
 }

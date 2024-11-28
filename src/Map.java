@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -5,6 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
+import javax.swing.JButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 public class Map {
 	
@@ -14,6 +18,11 @@ public class Map {
 	private String[][] stringMap;
 	private Block[][] blockMap;
 	private Item[][] listItem;
+
+	private Inventory inventory;
+	private JButton invButton;
+	private boolean invOpen = false;
+	
 	private int lenX = 0;
 	private int lenY = 0;
 	private int startPosX;
@@ -43,8 +52,24 @@ public class Map {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		System.out.println("Initialing map");
 		InitializeStringMap();
 		InitializeItem();
+		InitializeBlockMap();
+		InitializePos();
+		InitializeButton();
+		return true;
+	}
+
+	public void InitializePos(){
+		for (int i = 0; i < lenY; i++){
+			for (Block b : blockMap[i]){
+				b.InitializePos(startPosX, startPosY);
+			}
+		}
+	}
+
+	public boolean InitializeBlockMap(){
 		blockMap = new Block[lenY][lenX];
 		System.out.println("x : " + lenX + " y : " + lenY);
 		for (int i = 0; i < lenY; i++){
@@ -74,24 +99,14 @@ public class Map {
 				}
 			}
 		}
-		InitializePos();
 		return true;
-	}
-
-	public void InitializePos(){
-		for (int i = 0; i < lenY; i++){
-			for (Block b : blockMap[i]){
-				b.InitializePos(startPosX, startPosY);
-			}
-		}
 	}
 
 	public boolean InitializeStringMap(){
 		Scanner scan;
-		String line = "";
+		String line;
 		String[] tabLine;
 
-		System.out.println("Initialing map");
 		try {
 			scan = new Scanner(fileMap);
 			line = scan.nextLine();
@@ -129,7 +144,6 @@ public class Map {
 		String[] tab;
 		int i = 0;
 
-		System.out.println("Initialing map");
 		try {
 			scan = new Scanner(fileMap);
 			while (scan.hasNextLine() && line.equals("ENDMAP") == false){
@@ -161,24 +175,59 @@ public class Map {
 			e.printStackTrace();
 			return false;
 		}
+		this.inventory = new Inventory(data, listItem);
+		inventory.InitializeInventory();
 		return true;
+	}
+
+	public void InitializeButton(){
+		invButton = new JButton("Inventory");
+		invButton.setBounds(data.width / 100, data.height / 100 , data.width / 10, data.height / 15);
+		invButton.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent cEvt){
+				if (invOpen && invButton.getModel().isPressed()){
+					inventory.showInventory(false);
+					invOpen = false;
+				} else if (invOpen == false && invButton.getModel().isPressed()){
+					inventory.showInventory(true);
+					invOpen = true;
+				}
+			}
+		});
+		invButton.setBackground(Color.WHITE);
+		invButton.setFocusPainted(false);
+		data.panel.add(invButton);
+		invButton.setVisible(true);
 	}
 
 	public void drawMap(Graphics2D g){
 		for (int i = 0; i < lenY; i++){
+			if (blockMap == null){
+				System.out.println("failed to load map");
+				return ;
+			}
+			if (blockMap[i] == null){
+				System.out.println("failed to load : block" + i);
+			}
 			for (Block b : blockMap[i]){
-				b.drawBlock(g);
+				if (b == null){
+					System.out.println("failed to load in block[i] : " + i);
+				} else {
+					b.drawBlock(g);
+				}
 			}
 		}
 	}
 
 	public void update(){
 		if (data.key.up){
+			System.out.println("MOVEEE UP");
 			moveUp();
 			if (checkCollision() == false)
 				moveDown();
 		}
 		if (data.key.down){
+			System.out.println("MOVEEE DOWN");
 			moveDown();
 			if (checkCollision() == false)
 				moveUp();

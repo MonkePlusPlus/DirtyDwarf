@@ -3,10 +3,10 @@ import java.awt.image.BufferedImage;
 
 public class Item {
 	
-	private String name;
-	private String symb;
-	private int time_to_make;
-	private BufferedImage image;
+	public String name;
+	public String symb;
+	public int time_to_make;
+	public BufferedImage image;
 
 	public Item(String name, String symb, int time, BufferedImage image){
 		this.name = name;

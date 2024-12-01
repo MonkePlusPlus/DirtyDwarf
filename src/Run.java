@@ -30,6 +30,7 @@ public class Run implements Runnable {
 
 			if (delta >= 1){
 				// GAME LOOP
+				//System.out.println("loop");
 				game.update();
 				game.repaint();
 				delta--;

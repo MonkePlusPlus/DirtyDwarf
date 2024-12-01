@@ -1,8 +1,27 @@
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.ScrollPane;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.LinkedList;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.ScrollPaneLayout;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.UIManager;
+import javax.swing.plaf.UIResource;
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
 
 class Slot {
 	public Item obj;
@@ -18,17 +37,30 @@ public class Inventory extends JTabbedPane {
 	
 	private LinkedList<Slot> items;
 	private Item[][] listItem;
+
 	public int money;
 	private Data data;
+
 	private JPanel invPanel;
 	private JPanel craftPanel;
+
+	private int textSize;
+
 	private int startX;
 	private int startY;
 	private int width;
 	private int height;
-	Color myColour = new Color(255, 255, 255, 127);
 
-	public Inventory(Data data, Item[][] listItems){
+	private JButton invButton;
+	private boolean invOpen = false;
+
+	private int spaceBetween;
+	
+	Color myColor = new Color(255, 255, 255, 127);
+	Color transparent = new Color(255, 255, 255, 0);
+	//Color myColor = Color.GRAY;
+
+	public Inventory(Data data){
 		this.data = data;
 		this.items = new LinkedList<>();
 		this.money = 0;
@@ -36,38 +68,184 @@ public class Inventory extends JTabbedPane {
 		this.startY = data.height / 10;
 		this.width = (int)(data.width / 1.25);
 		this.height = (int)(data.height / 1.25);
+		this.spaceBetween = height / 50;
+		this.textSize = height / 9;
 		this.setBounds(startX, startY, width, height);
-		this.setBackground(myColour);
-		//this.setAlignmentY(Component.CENTER_ALIGNMENT);
-		data.panel.add(this);
-		this.setVisible(false);
+		this.setBackground(myColor);
+		this.addKeyListener(data.key);
+		UIManager.put("TabbedPane.contentOpaque", false);
+		UIManager.put("TabbedPane.selected", Color.RED);
+		UIManager.put("TabbedPane.background", Color.RED);
+		SwingUtilities.updateComponentTreeUI(this);
+		this.setVisible(true);
 	}
+
+	public void updateInventory(){
+		updateCraftPanel();
+		updateInvPanel();
+	}
+
+	public void updateInvPanel(){
+		invPanel.removeAll();
+		int i = 0;
+		JTextArea invtext = new JTextArea("INVENTAIRE");
+		invtext.setBounds(width / 4, 0, width, textSize);
+		invtext.setBackground(transparent);
+		invtext.setFont(new Font("Arial Black", Font.BOLD, 100));
+		invtext.setFocusable(false);
+
+		for (Slot s : items){
+			JLabel lab = new JLabel(new ImageIcon(s.obj.image));
+			lab.setBounds(width / 10, textSize + i * data.size + (i + 1) * spaceBetween, data.size, data.size);
+
+			String t = s.obj.name + " x " + s.nb;
+
+			JTextArea text = new JTextArea(t);
+			text.setBounds(width / 10 + data.size * 2, textSize + i * data.size + (i + 1) * spaceBetween, t.length() * width / 10, data.size);
+			text.setFont(new Font("Arial Black", Font.PLAIN, 30));
+			text.setBackground(transparent);
+			text.setFocusable(false);
+			text.setForeground(Color.WHITE);
+
+			invPanel.add(lab);
+			invPanel.add(text);
+			i++;
+		}
+		invPanel.add(invtext);
+	}
+
 
 	public void InitializeInvPanel(){
 		invPanel = new JPanel();
-		invPanel.setBackground(Color.BLUE);
-		invPanel.setPreferredSize(new Dimension(width, height));
+		invPanel.setBackground(transparent);
+		invPanel.setPreferredSize(new Dimension(width, textSize + items.size() * data.size + (items.size() + 1) * spaceBetween));
 		invPanel.setDoubleBuffered(true);
-		invPanel.setFocusable(true);
+		invPanel.setFocusable(true);	
+		invPanel.setLayout(null);	
+		updateInvPanel();
+		invPanel.setVisible(true);
+	}
+
+	public void updateCraftPanel(){
+		craftPanel.removeAll();
+		JTextArea crafttext = new JTextArea("CRAFT");
+		crafttext.setBounds(width / 3, 0, width, textSize);
+		crafttext.setBackground(transparent);
+		crafttext.setFont(new Font("Arial Black", Font.BOLD, 100));
+		crafttext.setFocusable(false);
+
+		for (int i = 0; i < listItem[1].length; i++){
+			Recipe r = (Recipe)listItem[1][i];
+
+			JLabel lab = new JLabel(new ImageIcon(r.image));
+			lab.setBounds(width / 10, textSize + i * data.size + (i + 1) * spaceBetween, data.size, data.size);
+
+			String t = r.name + " = ";
+			for (int j = 0; j < r.nbIngredient; j++){
+				String textItem = r.ingredients[j].obj.name + " x " + r.ingredients[j].nb;
+				t += (j == r.nbIngredient - 1) ? textItem : textItem + " + ";
+			} 
+
+			JTextArea text = new JTextArea(t);
+			text.setFont(new Font("Arial Black", Font.PLAIN, 30));
+			text.setBounds(width / 10 + data.size * 2, textSize + i * data.size + (i + 1) * spaceBetween, t.length() * width / 10, data.size);
+			text.setBackground(transparent);
+			text.setFocusable(false);
+			text.setForeground(Color.WHITE);
+
+			JButton button = new JButton("CRAFT");
+			button.setBounds(width - width / 5, textSize + i * data.size + (i + 1) * spaceBetween, width / 8, data.size);
+			button.setBackground(Color.YELLOW);
+			button.setFocusable(false);
+			button.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e){
+					Timer t = new Timer(r.time_to_make * 10, new ActionListener(){
+						@Override
+						public void actionPerformed(ActionEvent e){
+							System.out.println("timer");
+						}
+					});
+					t.start();
+					button.setEnabled(false);
+					while (t.isRunning() == true){
+
+					}
+					addObj(r);
+					button.setEnabled(true);
+					updateInvPanel();
+				}
+			});
+			craftPanel.add(button);
+			craftPanel.add(lab);
+			craftPanel.add(text);
+		}
+		craftPanel.add(crafttext);
 	}
 
 	public void InitializeCraftPanel(){
 		craftPanel = new JPanel();
-		craftPanel.setBackground(Color.RED);
-		craftPanel.setPreferredSize(new Dimension(width, height));
+		craftPanel.setBackground(transparent);
+		craftPanel.setPreferredSize(new Dimension(width, textSize + listItem[1].length * data.size + (listItem[1].length + 1) * spaceBetween));
 		craftPanel.setDoubleBuffered(true);
 		craftPanel.setFocusable(true);
+		craftPanel.setLayout(null);
+		updateCraftPanel();
+		craftPanel.setVisible(true);
 	}
 
-	public void InitializeInventory(){
-		this.addTab("Inventory", invPanel);
-		this.addTab("Craft", craftPanel);
+	public void InitializeTab(){
+		JLabel lab1 = new JLabel();
+		lab1.setPreferredSize(new Dimension((int)(width / 2.1), height / 20));
+		lab1.setText("Inventory");
+		this.setTabComponentAt(0, lab1);
+
+		JLabel lab2 = new JLabel();
+		lab2.setPreferredSize(new Dimension((int)(width / 2.1), height / 20));
+		lab2.setText("Craft");
+		this.setTabComponentAt(1, lab2);
 	}
 
-	public void showInventory(boolean show){
-		this.setVisible(show);
-		//g.setColor(myColour);
-		//g.fillRect(startX, startY, width , height);
+	public void InitializeInventory(Item[][] listItems){
+		this.listItem = listItems;
+		InitializeCraftPanel();
+		InitializeInvPanel();
+		InitializeButton();
+
+		JScrollPane tab1 = createTab(invPanel);
+		JScrollPane tab2 = createTab(craftPanel);
+
+		this.addTab("Inventory", tab1);
+		this.addTab("Craft", tab2);
+		InitializeTab();
+		addObj(listItems[0][0]);
+	}
+
+	public void InitializeButton(){
+		invButton = new JButton("Inventory");
+		invButton.setBounds(data.width / 100, data.height / 100 , data.width / 10, data.height / 15);
+		invButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e){
+				drawInventory();
+			}
+		});
+		invButton.setBackground(Color.WHITE);
+		invButton.setFocusPainted(false);
+		data.panel.add(invButton);
+		invButton.setVisible(true);
+	}
+
+	public void drawInventory(){
+		if (invOpen == false){
+			updateInventory();
+			data.panel.add(this);
+			invOpen = true;
+		}
+		else {
+			data.panel.remove(this);
+			invOpen = false;
+		}
+		data.panel.revalidate();
+		data.panel.requestFocusInWindow();
 	}
 
 	public void addObj(Item obj){
@@ -103,5 +281,21 @@ public class Inventory extends JTabbedPane {
 		}
 		money -= amount;
 		return true;
+	}
+
+	public JScrollPane createTab(JPanel pane){
+		JScrollPane tab = new JScrollPane(pane);
+		JScrollBar bar = new JScrollBar();
+
+		tab.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		tab.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		tab.setBackground(myColor);
+		tab.setPreferredSize(new Dimension(width, height));
+
+		bar.setBounds(0, height / 80, width / 30, height - height / 10);
+		bar.setBackground(Color.GRAY);
+
+		tab.setVerticalScrollBar(bar);
+		return tab;
 	}
 }

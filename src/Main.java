@@ -9,6 +9,7 @@ public class Main {
 
 	static GraphicsDevice device = GraphicsEnvironment
 	.getLocalGraphicsEnvironment().getScreenDevices()[0];
+	
 
 	public static void main(String[] args) {	
 		JFrame window = new JFrame("Dirty Dwarf");
@@ -21,6 +22,7 @@ public class Main {
 		device.setFullScreenWindow(window);
 
 		Run runnable = new Run(width, height);
+		SwingUtilities.invokeLater(runnable);
 		window.add(runnable.game);
 
 		window.pack();

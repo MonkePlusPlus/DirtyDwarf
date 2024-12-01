@@ -1,4 +1,3 @@
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -6,9 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
-import javax.swing.JButton;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 public class Map {
 	
@@ -17,11 +13,7 @@ public class Map {
 	private File fileMap;
 	private String[][] stringMap;
 	private Block[][] blockMap;
-	private Item[][] listItem;
-
-	private Inventory inventory;
-	private JButton invButton;
-	private boolean invOpen = false;
+	public Item[][] listItem;
 	
 	private int lenX = 0;
 	private int lenY = 0;
@@ -57,7 +49,6 @@ public class Map {
 		InitializeItem();
 		InitializeBlockMap();
 		InitializePos();
-		InitializeButton();
 		return true;
 	}
 
@@ -175,29 +166,10 @@ public class Map {
 			e.printStackTrace();
 			return false;
 		}
-		this.inventory = new Inventory(data, listItem);
-		inventory.InitializeInventory();
+		for (Item r : listItem[1]){
+			((Recipe)r).createIngredient(listItem);
+		}
 		return true;
-	}
-
-	public void InitializeButton(){
-		invButton = new JButton("Inventory");
-		invButton.setBounds(data.width / 100, data.height / 100 , data.width / 10, data.height / 15);
-		invButton.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent cEvt){
-				if (invOpen && invButton.getModel().isPressed()){
-					inventory.showInventory(false);
-					invOpen = false;
-				} else if (invOpen == false && invButton.getModel().isPressed()){
-					inventory.showInventory(true);
-					invOpen = true;
-				}
-			}
-		});
-		invButton.setBackground(Color.WHITE);
-		invButton.setFocusPainted(false);
-		data.panel.add(invButton);
-		invButton.setVisible(true);
 	}
 
 	public void drawMap(Graphics2D g){

@@ -5,12 +5,16 @@ import java.awt.Graphics;
 import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.LinkedList;
+import java.util.Scanner;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -53,6 +57,9 @@ public class Inventory extends JTabbedPane {
 
 	private JButton invButton;
 	private boolean invOpen = false;
+
+	private JButton[] craftButton;
+	private int nbRecipe;
 
 	private int spaceBetween;
 	
@@ -126,15 +133,53 @@ public class Inventory extends JTabbedPane {
 		invPanel.setVisible(true);
 	}
 
-	public void updateCraftPanel(){
+	public JButton createCraftButtun(Recipe r, int i){
+		JButton button = new JButton("CRAFT");
+		button.setBounds(width - width / 5, textSize + i * data.size + (i + 1) * spaceBetween, width / 8, data.size);
+		button.setBackground(Color.YELLOW);
+		button.setFocusable(false);
+		button.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e){
+				Thread thread = new Thread(new Runnable(){
+					@Override
+					public void run(){
+						JProgressBar progressBar = new JProgressBar(0, r.time_to_make);
+						progressBar.setValue(0);
+						progressBar.setStringPainted(true);
+						progressBar.setBounds(width - width / 5, textSize + i * data.size + (i + 1) * spaceBetween, width / 8, data.size);
+						progressBar.setVisible(true);
+						craftPanel.add(progressBar);
+						button.setVisible(false);
+						long start = System.currentTimeMillis();
+						long t;
+						while ((t = ((System.currentTimeMillis() - start) / 1000)) < r.time_to_make){
+							progressBar.setValue((int)t);
+						}
+						addObj(r, 1);
+						for (Slot s : r.ingredients){
+							deleteObj(s.obj, s.nb);
+						}
+						craftPanel.remove(progressBar);
+						button.setVisible(true);
+						updateInventory();
+					}
+				});
+				thread.start();
+			}
+		});
+		return button;
+	}
+
+	public void createCraftPanel(){
 		craftPanel.removeAll();
 		JTextArea crafttext = new JTextArea("CRAFT");
 		crafttext.setBounds(width / 3, 0, width, textSize);
 		crafttext.setBackground(transparent);
 		crafttext.setFont(new Font("Arial Black", Font.BOLD, 100));
 		crafttext.setFocusable(false);
-
-		for (int i = 0; i < listItem[1].length; i++){
+		nbRecipe = listItem[1].length;
+		craftButton = new JButton[nbRecipe];
+		for (int i = 0; i < nbRecipe; i++){
 			Recipe r = (Recipe)listItem[1][i];
 
 			JLabel lab = new JLabel(new ImageIcon(r.image));
@@ -153,33 +198,38 @@ public class Inventory extends JTabbedPane {
 			text.setFocusable(false);
 			text.setForeground(Color.WHITE);
 
-			JButton button = new JButton("CRAFT");
-			button.setBounds(width - width / 5, textSize + i * data.size + (i + 1) * spaceBetween, width / 8, data.size);
-			button.setBackground(Color.YELLOW);
-			button.setFocusable(false);
-			button.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e){
-					Timer t = new Timer(r.time_to_make * 10, new ActionListener(){
-						@Override
-						public void actionPerformed(ActionEvent e){
-							System.out.println("timer");
-						}
-					});
-					t.start();
-					button.setEnabled(false);
-					while (t.isRunning() == true){
-
-					}
-					addObj(r);
-					button.setEnabled(true);
-					updateInvPanel();
-				}
-			});
-			craftPanel.add(button);
+			craftButton[i] = createCraftButtun(r, i);
+			craftPanel.add(craftButton[i]);
 			craftPanel.add(lab);
 			craftPanel.add(text);
 		}
 		craftPanel.add(crafttext);
+	}
+
+	public void updateCraftPanel(){
+		int i = 0;
+		for (Item item : listItem[1]){
+			Recipe r = (Recipe)item;
+			System.out.println(r.name);
+			craftButton[i].setEnabled(checkIngredient(r));
+			i++;
+		}
+	}
+
+	public boolean checkIngredient(Recipe r){
+		int did = 0;
+		int todo = r.ingredients.length;
+
+		for (Slot s : r.ingredients){
+			for (Slot item : items){
+				if (s.obj.name.equals(item.obj.name)){
+					if (s.nb <= item.nb){
+						did++;
+					}
+				}
+			}
+		}
+		return (todo == did);
 	}
 
 	public void InitializeCraftPanel(){
@@ -189,7 +239,7 @@ public class Inventory extends JTabbedPane {
 		craftPanel.setDoubleBuffered(true);
 		craftPanel.setFocusable(true);
 		craftPanel.setLayout(null);
-		updateCraftPanel();
+		createCraftPanel();
 		craftPanel.setVisible(true);
 	}
 
@@ -205,7 +255,7 @@ public class Inventory extends JTabbedPane {
 		this.setTabComponentAt(1, lab2);
 	}
 
-	public void InitializeInventory(Item[][] listItems){
+	public void InitializeInventory(Item[][] listItems, File fileMap){
 		this.listItem = listItems;
 		InitializeCraftPanel();
 		InitializeInvPanel();
@@ -217,7 +267,8 @@ public class Inventory extends JTabbedPane {
 		this.addTab("Inventory", tab1);
 		this.addTab("Craft", tab2);
 		InitializeTab();
-		addObj(listItems[0][0]);
+		startingInventory(fileMap);
+		updateCraftPanel();
 	}
 
 	public void InitializeButton(){
@@ -234,6 +285,37 @@ public class Inventory extends JTabbedPane {
 		invButton.setVisible(true);
 	}
 
+	public boolean startingInventory(File fileMap){
+		Scanner scan;
+		String line;
+		String[] tab;
+
+		try {
+			scan = new Scanner(fileMap);
+			line = scan.nextLine();
+			while (scan.hasNextLine() && line.equals("ENDOBJ") == false){
+				line = scan.nextLine();
+			}
+			line = scan.nextLine();
+			tab = line.split(":");
+			fillInventory(tab[1]);
+			scan.close();
+		} catch (FileNotFoundException e){
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	public void fillInventory(String startInv){
+		String[] items = startInv.split("_");
+
+		for (String s : items){
+			String[] i = s.split("-");
+			addObj(getItem(i[1], listItem), Integer.valueOf(i[0]));
+		}
+	}
+
 	public void drawInventory(){
 		if (invOpen == false){
 			updateInventory();
@@ -248,23 +330,27 @@ public class Inventory extends JTabbedPane {
 		data.panel.requestFocusInWindow();
 	}
 
-	public void addObj(Item obj){
+	public void addObj(Item obj, int nb){
 		for (int i = 0; i < items.size(); i++) {
 			if (items.get(i).obj.equals(obj)){
-				items.get(i).nb += 1;
+				items.get(i).nb += nb;
 				return ;
 			}
 		}
-		items.add(new Slot(obj, 1));
+		items.add(new Slot(obj, nb));
 	}
 
 	public boolean deleteObj(Item obj, int nb){
 		for (int i = 0; i < items.size(); i++) {
 			if (items.get(i).obj.equals(obj)){
-				if (items.get(i).nb >= nb)
+				if (items.get(i).nb >= nb){
 					items.get(i).nb -= nb;
-				else 
+					if (items.get(i).nb == 0){
+						items.remove(i);
+					}
+				} else {
 					return false;
+				}
 				return true;
 			}
 		}
@@ -297,5 +383,16 @@ public class Inventory extends JTabbedPane {
 
 		tab.setVerticalScrollBar(bar);
 		return tab;
+	}
+
+	public Item getItem(String name, Item[][] items){
+		for (int n = 0; n < 2; n++){
+			for (Item i : items[n]){
+				if (i.name.equals(name)){
+					return i;
+				}
+			}
+		}
+		return null;
 	}
 }

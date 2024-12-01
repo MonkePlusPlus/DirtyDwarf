@@ -129,7 +129,7 @@ public class Map {
 
 	public boolean InitializeItem(){
 		Scanner scan;
-		String line = "";
+		String line;
 		String[] tabItem;
 		String[] tabRecipe;
 		String[] tab;
@@ -137,6 +137,7 @@ public class Map {
 
 		try {
 			scan = new Scanner(fileMap);
+			line = scan.nextLine();
 			while (scan.hasNextLine() && line.equals("ENDMAP") == false){
 				line = scan.nextLine();
 			}

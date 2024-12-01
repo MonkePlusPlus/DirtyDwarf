@@ -8,12 +8,13 @@ public class Game extends JPanel {
 	private Map map;
 	private Player player;
 	private Inventory inventory;
+	private File fileMap = new File("save/maptest.txt");
 
 	public Game(int width, int height) {
 		super();
 		this.data = new Data(width, height, 48, 4, new KeyHandler(), this);
 		this.player = new Player(data);
-		this.map = new Map(data, new File("save/maptest.txt"));
+		this.map = new Map(data, fileMap);
 		this.inventory = new Inventory(data);
 		setPreferredSize(new Dimension(width, height));
 		setBackground(Color.BLACK);
@@ -31,7 +32,7 @@ public class Game extends JPanel {
 	public void InitializeGame(){
 		player.InitializePlayer(0, 0);
 		map.InitializeMap();
-		inventory.InitializeInventory(map.listItem);
+		inventory.InitializeInventory(map.listItem, fileMap);
 		map.printMap();
 	}
 

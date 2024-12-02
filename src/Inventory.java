@@ -28,16 +28,6 @@ import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
 import javax.swing.plaf.basic.BasicTabbedPaneUI;
 
-class Slot {
-	public Item obj;
-	public int nb;
-
-	public Slot(Item obj, int nb){
-		this.obj = obj;
-		this.nb = nb;
-	}
-}
-
 public class Inventory extends JTabbedPane {
 	
 	private LinkedList<Slot> items;

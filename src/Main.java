@@ -23,6 +23,7 @@ public class Main {
 
 		Run runnable = new Run(width, height);
 		SwingUtilities.invokeLater(runnable);
+
 		window.add(runnable.game);
 
 		window.pack();

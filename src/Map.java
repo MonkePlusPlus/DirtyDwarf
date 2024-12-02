@@ -1,4 +1,5 @@
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,9 +28,10 @@ public class Map {
 	private int ressourceIndex = 1;
 	private int itemIndex = 2;
 	private int recipeIndex = 3;
-	private int coinIndex = 4; 
+	private int coinIndex = 4;
 
 	private BufferedImage tiles;
+	private int sizeTile = 48;
 
 	public Map(Data data, File file){
 		this.data = data;
@@ -60,19 +62,26 @@ public class Map {
 		}
 	}
 
+	public BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) throws IOException {
+		Image resultingImage = originalImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_DEFAULT);
+		BufferedImage outputImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
+		outputImage.getGraphics().drawImage(resultingImage, 0, 0, null);
+		return outputImage;
+	}
+	
 	public boolean InitializeBlockMap(){
 		blockMap = new Block[lenY][lenX];
 		System.out.println("x : " + lenX + " y : " + lenY);
 		for (int i = 0; i < lenY; i++){
 			for (int j = 0; j < lenX; j++){
 				if (stringMap[i][j].equals("1")) {
-					blockMap[i][j] = new Block(data, j, i, true, tiles.getSubimage(data.size, data.size * blockIndex, data.size, data.size));
+					blockMap[i][j] = new Block(data, j, i, true, tiles.getSubimage(sizeTile, sizeTile * blockIndex, sizeTile, sizeTile));
 				} else if (stringMap[i][j].equals("0")) {
-					blockMap[i][j] = new Block(data, j, i, false, tiles.getSubimage(0, data.size * blockIndex, data.size, data.size));
+					blockMap[i][j] = new Block(data, j, i, false, tiles.getSubimage(0, sizeTile * blockIndex, sizeTile, sizeTile));
 				} else if (stringMap[i][j].equals("P")){
 					startPosX = j;
 					startPosY = i;
-					blockMap[i][j] = new Block(data, j, i, false, tiles.getSubimage(data.size * 2, 0, data.size, data.size));
+					blockMap[i][j] = new Block(data, j, i, false, tiles.getSubimage(sizeTile * 2, 0, sizeTile, sizeTile));
 				} else if (stringMap[i][j].equals("N")) {
 					blockMap[i][j] = new Block(data, j, i, true, null);
 				} else {
@@ -80,7 +89,7 @@ public class Map {
 					for (Item o : listItem[0]){
 						if (stringMap[i][j].equals(o.getSymb())){
 							blockMap[i][j] = new Ressource(o, data, j, i, true, 
-											tiles.getSubimage(data.size * index, data.size * ressourceIndex, data.size, data.size));
+											tiles.getSubimage(sizeTile * index, sizeTile * ressourceIndex, sizeTile, sizeTile));
 							break ;
 						}
 						index++;
@@ -151,14 +160,14 @@ public class Map {
 			for (String s : tabItem){
 				tab = s.split(";");
 				listItem[0][i] = new Item(tab[0], tab[1], Integer.valueOf(tab[2]),
-								tiles.getSubimage(data.size * i, data.size * itemIndex, data.size, data.size));
+								tiles.getSubimage(sizeTile * i, sizeTile * itemIndex, sizeTile, sizeTile));
 				i++;
 			}
 			i = 0;
 			for (String s : tabRecipe){
 				tab = s.split(";");
 				listItem[1][i] = new Recipe(tab[0], tab[1], null, Integer.valueOf(tab[2]),
-								tiles.getSubimage(data.size * i, data.size * recipeIndex, data.size, data.size));
+								tiles.getSubimage(sizeTile * i, sizeTile * recipeIndex, sizeTile, sizeTile));
 				i++;
 			}
 			System.out.println();
@@ -194,13 +203,11 @@ public class Map {
 
 	public void update(){
 		if (data.key.up){
-			System.out.println("MOVEEE UP");
 			moveUp();
 			if (checkCollision() == false)
 				moveDown();
 		}
 		if (data.key.down){
-			System.out.println("MOVEEE DOWN");
 			moveDown();
 			if (checkCollision() == false)
 				moveUp();
@@ -267,9 +274,9 @@ public class Map {
 		for (int i = 0; i < lenY; i++){
 			for (Block b : blockMap[i]){
 				if (b.getCollission() == true) {
-					if (b.getPosY() > data.height / 2 - (data.size / 2) - 48 &&
+					if (b.getPosY() > data.height / 2 - (data.size / 2) - data.size &&
 						b.getPosY() < data.height / 2 + (data.size / 2) &&
-						b.getPosX() > data.width / 2 - (data.size / 2) - 48 &&
+						b.getPosX() > data.width / 2 - (data.size / 2) - data.size &&
 						b.getPosX() < data.width / 2 + (data.size / 2)){
 						return false;
 					}

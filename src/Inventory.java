@@ -2,6 +2,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -98,18 +99,18 @@ public class Inventory extends JTabbedPane {
 		JTextArea invtext = new JTextArea("INVENTAIRE");
 		invtext.setBounds(width / 4, 0, width, textSize);
 		invtext.setBackground(transparent);
-		invtext.setFont(new Font("Arial Black", Font.BOLD, 100));
+		invtext.setFont(new Font("Arial Black", Font.BOLD, 100 * data.size / 48));
 		invtext.setFocusable(false);
 
 		for (Slot s : items){
-			JLabel lab = new JLabel(new ImageIcon(s.obj.image));
+			JLabel lab = new JLabel(new ImageIcon(new ImageIcon(s.obj.image).getImage().getScaledInstance(data.size, data.size, Image.SCALE_DEFAULT)));
 			lab.setBounds(width / 10, textSize + i * data.size + (i + 1) * spaceBetween, data.size, data.size);
 
 			String t = s.obj.name + " x " + s.nb;
 
 			JTextArea text = new JTextArea(t);
 			text.setBounds(width / 10 + data.size * 2, textSize + i * data.size + (i + 1) * spaceBetween, t.length() * width / 10, data.size);
-			text.setFont(new Font("Arial Black", Font.PLAIN, 30));
+			text.setFont(new Font("Arial Black", Font.PLAIN, 30 * data.size / 48));
 			text.setBackground(transparent);
 			text.setFocusable(false);
 			text.setForeground(Color.WHITE);
@@ -175,14 +176,14 @@ public class Inventory extends JTabbedPane {
 		JTextArea crafttext = new JTextArea("CRAFT");
 		crafttext.setBounds(width / 3, 0, width, textSize);
 		crafttext.setBackground(transparent);
-		crafttext.setFont(new Font("Arial Black", Font.BOLD, 100));
+		crafttext.setFont(new Font("Arial Black", Font.BOLD, 100 * data.size / 48));
 		crafttext.setFocusable(false);
 		nbRecipe = listItem[1].length;
 		craftButton = new JButton[nbRecipe];
 		for (int i = 0; i < nbRecipe; i++){
 			Recipe r = (Recipe)listItem[1][i];
 
-			JLabel lab = new JLabel(new ImageIcon(r.image));
+			JLabel lab = new JLabel(new ImageIcon(new ImageIcon(r.image).getImage().getScaledInstance(data.size, data.size, Image.SCALE_DEFAULT)));
 			lab.setBounds(width / 10, textSize + i * data.size + (i + 1) * spaceBetween, data.size, data.size);
 
 			String t = r.name + " = ";
@@ -192,7 +193,7 @@ public class Inventory extends JTabbedPane {
 			} 
 
 			JTextArea text = new JTextArea(t);
-			text.setFont(new Font("Arial Black", Font.PLAIN, 30));
+			text.setFont(new Font("Arial Black", Font.PLAIN, 30 * data.size / 48));
 			text.setBounds(width / 10 + data.size * 2, textSize + i * data.size + (i + 1) * spaceBetween, t.length() * width / 10, data.size);
 			text.setBackground(transparent);
 			text.setFocusable(false);
@@ -245,12 +246,12 @@ public class Inventory extends JTabbedPane {
 
 	public void InitializeTab(){
 		JLabel lab1 = new JLabel();
-		lab1.setPreferredSize(new Dimension((int)(width / 2.1), height / 20));
+		lab1.setPreferredSize(new Dimension((int)(width / 2) - width / 20, height / 20));
 		lab1.setText("Inventory");
 		this.setTabComponentAt(0, lab1);
 
 		JLabel lab2 = new JLabel();
-		lab2.setPreferredSize(new Dimension((int)(width / 2.1), height / 20));
+		lab2.setPreferredSize(new Dimension((int)(width / 2) - width / 20, height / 20));
 		lab2.setText("Craft");
 		this.setTabComponentAt(1, lab2);
 	}

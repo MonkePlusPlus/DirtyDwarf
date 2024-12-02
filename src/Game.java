@@ -12,7 +12,7 @@ public class Game extends JPanel {
 
 	public Game(int width, int height) {
 		super();
-		this.data = new Data(width, height, 48, 4, new KeyHandler(), this);
+		this.data = new Data(width, height, (int)((width + height) / 62.5), 4, new KeyHandler(), this);
 		this.player = new Player(data);
 		this.map = new Map(data, fileMap);
 		this.inventory = new Inventory(data);

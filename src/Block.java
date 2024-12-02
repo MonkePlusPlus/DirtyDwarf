@@ -30,9 +30,9 @@ public class Block {
 	}
 
 	public void drawBlock(Graphics2D g){
-		if (posX >= -48 && posX <= data.width + 48 &&
-			posY >= -48 && posY <= data.height + 48 && image != null) {
-			g.drawImage(image, posX, posY, null);
+		if (posX >= -data.size && posX <= data.width + data.size &&
+			posY >= -data.size && posY <= data.height + data.size && image != null) {
+			g.drawImage(image, posX, posY, data.size, data.size, null);
 		}
 	}
 

@@ -14,6 +14,8 @@ public class Player {
 	private int axisX = 0;
 	private int axisY = 0;
 
+	private int sizeTile = 24;
+
 	private BufferedImage imageTile;
 	private BufferedImage image;
 	private BufferedImage[][] animImage;
@@ -21,7 +23,7 @@ public class Player {
 		this.data = data;
 		try {
 			this.imageTile = ImageIO.read(new File("asset/player.png"));
-			this.image = imageTile.getSubimage(0, 0, 24, 24);
+			this.image = imageTile.getSubimage(0, 0, sizeTile, sizeTile);
 		} catch (IOException e){
 			e.setStackTrace(null);
 		}
@@ -46,11 +48,11 @@ public class Player {
 			//System.out.println("move down");
 		}
 		if (data.key.left){
-			image = imageTile.getSubimage(0, 0, 24, 24);
+			image = imageTile.getSubimage(0, 0, sizeTile, sizeTile);
 			//System.out.println("move left");
 		}
 		if (data.key.right){
-			image = imageTile.getSubimage(24, 0, 24, 24);
+			image = imageTile.getSubimage(sizeTile, 0, sizeTile, sizeTile);
 			//System.out.println("move right");
 		}
 	}

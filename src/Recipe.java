@@ -12,7 +12,7 @@ public class Recipe extends Item {
 		this.ingredient = ingredient;
 	}
 
-	public void createIngredient(Item[][] listItems){
+	public void createIngredient(Object[][] listItems){
 		System.out.println(name + " = " + ingredient);
 		String[] items = ingredient.split("\\+");
 		this.nbIngredient = items.length;
@@ -23,9 +23,10 @@ public class Recipe extends Item {
 		}
 	}
 
-	public Item getItem(String name, Item[][] items){
+	public Item getItem(String name, Object[][] items){
 		for (int n = 0; n < 2; n++){
-			for (Item i : items[n]){
+			for (Object o : items[n]){
+				Item i = (Item)o;
 				if (i.name.equals(name)){
 					return i;
 				}
@@ -33,4 +34,9 @@ public class Recipe extends Item {
 		}
 		return null;
 	}
+
+    @Override
+    public ObjectType getType() {
+        return ObjectType.RECIPE;
+    }
 }

@@ -14,7 +14,7 @@ public class Map {
 	private File fileMap;
 	private String[][] stringMap;
 	private Block[][] blockMap;
-	public Item[][] listItem;
+	public Object[][] listItem;
 	
 	private int lenX = 0;
 	private int lenY = 0;
@@ -86,9 +86,10 @@ public class Map {
 					blockMap[i][j] = new Block(data, j, i, true, null);
 				} else {
 					int index = 0;
-					for (Item o : listItem[0]){
-						if (stringMap[i][j].equals(o.getSymb())){
-							blockMap[i][j] = new Ressource(o, data, j, i, true, 
+					for (Object o : listItem[0]){
+						Item item = (Item)o;
+						if (stringMap[i][j].equals(item.getSymb())){
+							blockMap[i][j] = new Ressource(item, data, j, i, true, 
 											tiles.getSubimage(sizeTile * index, sizeTile * ressourceIndex, sizeTile, sizeTile));
 							break ;
 						}
@@ -159,25 +160,24 @@ public class Map {
 			listItem[1] = new Item[tabRecipe.length];
 			for (String s : tabItem){
 				tab = s.split(";");
-				listItem[0][i] = new Item(tab[0], tab[1], Integer.valueOf(tab[2]),
+				listItem[0][i] = new Item(tab[0], tab[1], Integer.parseInt(tab[2]),
 								tiles.getSubimage(sizeTile * i, sizeTile * itemIndex, sizeTile, sizeTile));
 				i++;
 			}
 			i = 0;
 			for (String s : tabRecipe){
 				tab = s.split(";");
-				listItem[1][i] = new Recipe(tab[0], tab[1], null, Integer.valueOf(tab[2]),
+				listItem[1][i] = new Recipe(tab[0], tab[1], null, Integer.parseInt(tab[2]),
 								tiles.getSubimage(sizeTile * i, sizeTile * recipeIndex, sizeTile, sizeTile));
 				i++;
 			}
 			System.out.println();
 			scan.close();
 		} catch (FileNotFoundException e){
-			e.printStackTrace();
 			return false;
 		}
-		for (Item r : listItem[1]){
-			((Recipe)r).createIngredient(listItem);
+		for (Object o : listItem[1]){
+			((Recipe)o).createIngredient(listItem);
 		}
 		return true;
 	}

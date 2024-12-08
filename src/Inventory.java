@@ -1,9 +1,7 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -20,31 +18,26 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ScrollPaneLayout;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.UIManager;
-import javax.swing.plaf.UIResource;
-import javax.swing.plaf.basic.BasicTabbedPaneUI;
 
 public class Inventory extends JTabbedPane {
 	
 	private LinkedList<Slot> items;
-	private Item[][] listItem;
+	private Object[][] listItem;
 
 	public int money;
-	private Data data;
+	final private Data data;
 
 	private JPanel invPanel;
 	private JPanel craftPanel;
 
-	private int textSize;
+	final private int textSize;
 
-	private int startX;
-	private int startY;
-	private int width;
-	private int height;
+	final private int startX;
+	final private int startY;
+	final private int width;
+	final private int height;
 
 	private JButton invButton;
 	private boolean invOpen = false;
@@ -52,13 +45,14 @@ public class Inventory extends JTabbedPane {
 	private JButton[] craftButton;
 	private int nbRecipe;
 
-	private int spaceBetween;
+	final private int spaceBetween;
 	
 	Color myColor = new Color(255, 255, 255, 127);
 	Color transparent = new Color(255, 255, 255, 0);
 	//Color myColor = Color.GRAY;
 
 	public Inventory(Data data){
+		super();
 		this.data = data;
 		this.items = new LinkedList<>();
 		this.money = 0;
@@ -134,7 +128,7 @@ public class Inventory extends JTabbedPane {
 				Thread thread = new Thread(new Runnable(){
 					@Override
 					public void run(){
-						JProgressBar progressBar = new JProgressBar(0, r.time_to_make);
+						JProgressBar progressBar = new JProgressBar(0, r.time);
 						progressBar.setValue(0);
 						progressBar.setStringPainted(true);
 						progressBar.setBounds(width - width / 5, textSize + i * data.size + (i + 1) * spaceBetween, width / 8, data.size);
@@ -143,7 +137,7 @@ public class Inventory extends JTabbedPane {
 						button.setVisible(false);
 						long start = System.currentTimeMillis();
 						long t;
-						while ((t = ((System.currentTimeMillis() - start) / 1000)) < r.time_to_make){
+						while ((t = ((System.currentTimeMillis() - start) / 1000)) < r.time){
 							progressBar.setValue((int)t);
 						}
 						addObj(r, 1);
@@ -199,8 +193,8 @@ public class Inventory extends JTabbedPane {
 
 	public void updateCraftPanel(){
 		int i = 0;
-		for (Item item : listItem[1]){
-			Recipe r = (Recipe)item;
+		for (Object o : listItem[1]){
+			Recipe r = (Recipe)o;
 			System.out.println(r.name);
 			craftButton[i].setEnabled(checkIngredient(r));
 			i++;
@@ -246,7 +240,7 @@ public class Inventory extends JTabbedPane {
 		this.setTabComponentAt(1, lab2);
 	}
 
-	public void InitializeInventory(Item[][] listItems, File fileMap){
+	public void InitializeInventory(Object[][] listItems, File fileMap){
 		this.listItem = listItems;
 		InitializeCraftPanel();
 		InitializeInvPanel();
@@ -272,7 +266,6 @@ public class Inventory extends JTabbedPane {
 		});
 		invButton.setBackground(Color.WHITE);
 		invButton.setFocusPainted(false);
-		data.panel.add(invButton);
 		invButton.setVisible(true);
 	}
 
@@ -305,6 +298,10 @@ public class Inventory extends JTabbedPane {
 			String[] i = s.split("-");
 			addObj(getItem(i[1], listItem), Integer.valueOf(i[0]));
 		}
+	}
+
+	public void showInvButton(){
+		data.panel.add(invButton);
 	}
 
 	public void drawInventory(){
@@ -376,9 +373,10 @@ public class Inventory extends JTabbedPane {
 		return tab;
 	}
 
-	public Item getItem(String name, Item[][] items){
+	public Item getItem(String name, Object[][] items){
 		for (int n = 0; n < 2; n++){
-			for (Item i : items[n]){
+			for (Object o : items[n]){
+				Item i = (Item)o;
 				if (i.name.equals(name)){
 					return i;
 				}

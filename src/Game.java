@@ -1,21 +1,15 @@
 import java.awt.*;
-import java.io.File;
 import javax.swing.*;
 
 public class Game extends JPanel {
 
 	private Data data;
-	private Map map;
-	private Player player;
-	private Inventory inventory;
-	private File fileMap = new File("save/maptest.txt");
-
+	private Menu menu;
+	
 	public Game(int width, int height) {
 		super();
 		this.data = new Data(width, height, (int)((width + height) / 62.5), 4, new KeyHandler(), this);
-		this.player = new Player(data);
-		this.map = new Map(data, fileMap);
-		this.inventory = new Inventory(data);
+		this.menu = new Menu(data);
 		setPreferredSize(new Dimension(width, height));
 		setBackground(Color.BLACK);
 		setDoubleBuffered(true);
@@ -25,20 +19,16 @@ public class Game extends JPanel {
 	}
 
 	public void update(){
-		map.update();
-		player.update();
+		menu.update();
 	}
 
 	public void InitializeGame(){
-		player.InitializePlayer(0, 0);
-		map.InitializeMap();
-		inventory.InitializeInventory(map.listItem, fileMap);
-		map.printMap();
+		menu.InitialiseMenu();
+		menu.displayMenu();
 	}
 
 	public void drawGame(Graphics2D g2){
-		map.drawMap(g2);
-		player.draw(g2);
+		menu.drawGame(g2);
 	}
 
 	@Override

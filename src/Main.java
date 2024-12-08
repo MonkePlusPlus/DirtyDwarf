@@ -1,11 +1,12 @@
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Toolkit;
 import javax.swing.*;
 
 public class Main {
 
-	static private int width = 1920;
-	static private int height = 1080;
+	static private int width = (int)Toolkit.getDefaultToolkit().getScreenSize().getWidth();
+	static private int height = (int)Toolkit.getDefaultToolkit().getScreenSize().getHeight();
 
 	static GraphicsDevice device = GraphicsEnvironment
 	.getLocalGraphicsEnvironment().getScreenDevices()[0];

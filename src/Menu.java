@@ -6,10 +6,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
 
-public class Menu {
+public class Menu extends JPanel {
 	
 	private Data data;
 	private Map map;
@@ -26,10 +27,17 @@ public class Menu {
 	private boolean level = false;
 
 	public Menu(Data data){
+		super();
 		this.data = data;
 		this.player = new Player(data);
 		this.map = new Map(data, fileMap);
 		this.inventory = new Inventory(data);
+		setBackground(Color.BLACK);
+		setDoubleBuffered(true);
+		addKeyListener(data.key);
+		setLayout(null);
+		setFocusable(true);
+		setBounds(0, 0, data.width, data.height);
 	}
 
 	public void update(){
@@ -72,6 +80,11 @@ public class Menu {
 				level = true;
 			}
 		});
+
+		this.add(titleScreen);
+		this.add(quitButton);
+		this.add(contButton);
+		this.add(newgButton);
 	}
 
 	public void InitializeLevel(){
@@ -83,10 +96,7 @@ public class Menu {
 
 	public void displayMenu(){
 		data.panel.removeAll();
-		data.panel.add(titleScreen);
-		data.panel.add(quitButton);
-		data.panel.add(contButton);
-		data.panel.add(newgButton);
+		data.panel.add(this);
 	}
 
 	public JButton createButton(String name, int x, int y){

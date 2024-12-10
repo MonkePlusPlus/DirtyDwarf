@@ -16,22 +16,21 @@ public class Menu extends JPanel {
 	private Map map;
 	private Player player;
 	private Inventory inventory;
+	private MenuPause menuPause;
 	private File fileMap = new File("save/maptest.txt");
 
 	private JButton quitButton;
 	private JButton contButton;
+	private JButton optiButton;
 	private JButton newgButton;
 
 	private JTextArea titleScreen;
 
-	private boolean level = false;
+	private boolean running = false;
 
 	public Menu(Data data){
 		super();
 		this.data = data;
-		this.player = new Player(data);
-		this.map = new Map(data, fileMap);
-		this.inventory = new Inventory(data);
 		setBackground(Color.BLACK);
 		setDoubleBuffered(true);
 		addKeyListener(data.key);
@@ -41,12 +40,14 @@ public class Menu extends JPanel {
 	}
 
 	public void update(){
-		map.update();
-		player.update();
+		if (running){
+			map.update();
+			player.update();
+		}
 	}
 
 	public void drawGame(Graphics2D g){
-		if (level){
+		if (running){
 			map.drawMap(g);
 			player.draw(g);
 		}
@@ -61,9 +62,10 @@ public class Menu extends JPanel {
 		titleScreen.setForeground(Color.WHITE);
 		titleScreen.setFocusable(false);
 
-		contButton = createButton("CONTINUE", data.width / 3, (data.height / 5) * 2);
-		newgButton = createButton("NEW GAME", data.width / 3, (data.height / 5) * 3);
-		quitButton = createButton("QUIT", data.width / 3, (data.height / 5) * 4);
+		contButton = createButton("CONTINUE", data.width / 3, (data.height / 6) * 2);
+		newgButton = createButton("NEW GAME", data.width / 3, (data.height / 6) * 3);
+		optiButton = createButton("OPTION", data.width / 3, (data.height / 6) * 4);
+		quitButton = createButton("QUIT", data.width / 3, (data.height / 6) * 5);
 
 		quitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e){
@@ -76,22 +78,31 @@ public class Menu extends JPanel {
 			public void actionPerformed(ActionEvent e){
 				data.panel.removeAll();
 				InitializeLevel();
-				inventory.showInvButton();
-				level = true;
+				running = true;
 			}
 		});
 
 		this.add(titleScreen);
-		this.add(quitButton);
 		this.add(contButton);
 		this.add(newgButton);
+		this.add(optiButton);
+		this.add(quitButton);
 	}
 
 	public void InitializeLevel(){
+		this.player = new Player(data);
+		this.map = new Map(data, fileMap);
+		this.inventory = new Inventory(data);
+		this.menuPause = new MenuPause(data);
+
 		player.InitializePlayer(0, 0);
 		map.InitializeMap();
 		inventory.InitializeInventory(map.listItem, fileMap);
+		menuPause.InitializeMenuPause(this, inventory);
 		map.printMap();
+
+		inventory.showInvButton();
+		menuPause.showPauseButton();
 	}
 
 	public void displayMenu(){

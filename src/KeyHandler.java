@@ -6,6 +6,7 @@ public class KeyHandler implements KeyListener {
 
 	public boolean right, left, up, down;
 	public boolean key_e = false;
+	public boolean pause = false;
 
 
 	@Override
@@ -16,6 +17,10 @@ public class KeyHandler implements KeyListener {
 	@Override
 	public void keyPressed(KeyEvent e){
 		int code = e.getKeyCode();
+		
+		if (pause)
+			return ;
+
 		if (code == KeyEvent.VK_UP){
 			up = true;
 		}
@@ -38,6 +43,9 @@ public class KeyHandler implements KeyListener {
 	@Override
 	public void keyReleased(KeyEvent e){
 		int code = e.getKeyCode();
+
+		if (pause)
+			return ;
 
 		if (code == KeyEvent.VK_UP){
 			up = false;

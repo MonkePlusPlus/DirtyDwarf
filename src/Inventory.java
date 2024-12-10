@@ -2,16 +2,18 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.LinkedList;
 import java.util.Scanner;
-
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollBar;
@@ -29,8 +31,10 @@ public class Inventory extends JTabbedPane {
 	public int money;
 	final private Data data;
 
-	private JPanel invPanel;
-	private JPanel craftPanel;
+	private JLayeredPane invPanel;
+	private JLayeredPane craftPanel;
+
+	private JScrollPane scrollInv;
 
 	final private int textSize;
 
@@ -48,7 +52,7 @@ public class Inventory extends JTabbedPane {
 	final private int spaceBetween;
 	
 	Color myColor = new Color(255, 255, 255, 127);
-	Color transparent = new Color(255, 255, 255, 0);
+	Color transparent = new Color(0, 0, 0, 0);
 	//Color myColor = Color.GRAY;
 
 	public Inventory(Data data){
@@ -60,7 +64,7 @@ public class Inventory extends JTabbedPane {
 		this.startY = data.height / 10;
 		this.width = (int)(data.width / 1.25);
 		this.height = (int)(data.height / 1.25);
-		this.spaceBetween = height / 50;
+		this.spaceBetween = width / 20;
 		this.textSize = height / 9;
 		this.setBounds(startX, startY, width, height);
 		this.setBackground(myColor);
@@ -80,49 +84,52 @@ public class Inventory extends JTabbedPane {
 	public void updateInvPanel(){
 		invPanel.removeAll();
 		int i = 0;
-		JTextArea invtext = new JTextArea("INVENTAIRE");
-		invtext.setBounds(width / 4, 0, width, textSize);
-		invtext.setBackground(transparent);
-		invtext.setFont(new Font("Arial Black", Font.BOLD, 100 * data.size / 48));
-		invtext.setFocusable(false);
-
+		int j = 0;
+	
 		for (Slot s : items){
-			JLabel lab = new JLabel(new ImageIcon(new ImageIcon(s.obj.image).getImage().getScaledInstance(data.size, data.size, Image.SCALE_DEFAULT)));
-			lab.setBounds(width / 10, textSize + i * data.size + (i + 1) * spaceBetween, data.size, data.size);
-
-			String t = s.obj.name + " x " + s.nb;
+			JButton button = new JButton(new ImageIcon(new ImageIcon(s.obj.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
+			button.setBounds(data.size * 2 * i + spaceBetween * i, j * data.size * 2 + (j + 1) * spaceBetween, data.size * 2, data.size * 2);
+			
+			String t = "x" + s.nb;
 
 			JTextArea text = new JTextArea(t);
-			text.setBounds(width / 10 + data.size * 2, textSize + i * data.size + (i + 1) * spaceBetween, t.length() * width / 10, data.size);
-			text.setFont(new Font("Arial Black", Font.PLAIN, 30 * data.size / 48));
+			text.setBounds(width / 10 + data.size * 2 * (i + 1) + spaceBetween * i, textSize + j * data.size * 2 + (j + 1) * spaceBetween, t.length() * width / 10, data.size);
+			text.setFont(new Font("Karmatic Arcade", Font.PLAIN, 20 * data.size / 48));
 			text.setBackground(transparent);
 			text.setFocusable(false);
-			text.setForeground(Color.WHITE);
+			text.setForeground(Color.BLACK);
 
-			invPanel.add(lab);
+			invPanel.add(button);
 			invPanel.add(text);
+			invPanel.setLayer(button, 1);
+			invPanel.setLayer(text, 2);
 			i++;
+			if (i > 10){
+				i = 0;
+				j++;
+			}
 		}
-		invPanel.add(invtext);
 	}
 
 
 	public void InitializeInvPanel(){
-		invPanel = new JPanel();
+		invPanel = new JLayeredPane();
 		invPanel.setBackground(transparent);
-		invPanel.setPreferredSize(new Dimension(width, textSize + items.size() * data.size + (items.size() + 1) * spaceBetween));
+		invPanel.setOpaque(true);
+		invPanel.setPreferredSize(new Dimension(width / 2, textSize + items.size() * data.size + (items.size() + 1) * spaceBetween));
 		invPanel.setDoubleBuffered(true);
 		invPanel.setFocusable(true);	
-		invPanel.setLayout(null);	
+		invPanel.setLayout(null);
 		updateInvPanel();
 		invPanel.setVisible(true);
 	}
 
 	public JButton createCraftButtun(Recipe r, int i){
-		JButton button = new JButton("CRAFT");
+		JButton button = new JButton(r.time + "s");
 		button.setBounds(width - width / 5, textSize + i * data.size + (i + 1) * spaceBetween, width / 8, data.size);
 		button.setBackground(Color.YELLOW);
 		button.setFocusable(false);
+		button.setBorder(BorderFactory.createLineBorder(Color.GREEN, 4 * data.width / 1920));
 		button.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e){
 				Thread thread = new Thread(new Runnable(){
@@ -196,7 +203,14 @@ public class Inventory extends JTabbedPane {
 		for (Object o : listItem[1]){
 			Recipe r = (Recipe)o;
 			System.out.println(r.name);
-			craftButton[i].setEnabled(checkIngredient(r));
+			if (!checkIngredient(r)) {
+				craftButton[i].setEnabled(false);
+				craftButton[i].setBorder(BorderFactory.createLineBorder(Color.RED, 4 * width / 1920));
+			}
+			else {
+				craftButton[i].setEnabled(true);
+				craftButton[i].setBorder(BorderFactory.createLineBorder(Color.GREEN, 4 * width / 1920));
+			}
 			i++;
 		}
 	}
@@ -218,10 +232,11 @@ public class Inventory extends JTabbedPane {
 	}
 
 	public void InitializeCraftPanel(){
-		craftPanel = new JPanel();
+		craftPanel = new JLayeredPane();
 		craftPanel.setBackground(transparent);
 		craftPanel.setPreferredSize(new Dimension(width, textSize + listItem[1].length * data.size + (listItem[1].length + 1) * spaceBetween));
 		craftPanel.setDoubleBuffered(true);
+		craftPanel.setOpaque(true);
 		craftPanel.setFocusable(true);
 		craftPanel.setLayout(null);
 		createCraftPanel();
@@ -246,8 +261,8 @@ public class Inventory extends JTabbedPane {
 		InitializeInvPanel();
 		InitializeButton();
 
-		JScrollPane tab1 = createTab(invPanel);
-		JScrollPane tab2 = createTab(craftPanel);
+		JPanel tab1 = createInvTab(invPanel);
+		JScrollPane tab2 = createCraftTab(craftPanel);
 
 		this.addTab("Inventory", tab1);
 		this.addTab("Craft", tab2);
@@ -258,7 +273,7 @@ public class Inventory extends JTabbedPane {
 
 	public void InitializeButton(){
 		invButton = new JButton("Inventory");
-		invButton.setBounds(data.width / 100, data.height / 100 , data.width / 10, data.height / 15);
+		invButton.setBounds(data.width / 100 + data.width / 9, data.height / 100, data.width / 10, data.height / 15);
 		invButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e){
 				drawInventory();
@@ -302,6 +317,17 @@ public class Inventory extends JTabbedPane {
 
 	public void showInvButton(){
 		data.panel.add(invButton);
+	}
+
+	public void removeInvButton(){
+		data.panel.remove(invButton);
+	}
+
+	public void removeInventory(){
+		if (invOpen == true){
+			data.panel.remove(this);
+			invOpen = false;
+		}
 	}
 
 	public void drawInventory(){
@@ -357,7 +383,7 @@ public class Inventory extends JTabbedPane {
 		return true;
 	}
 
-	public JScrollPane createTab(JPanel pane){
+	public JScrollPane createCraftTab(JLayeredPane pane){
 		JScrollPane tab = new JScrollPane(pane);
 		JScrollBar bar = new JScrollBar();
 
@@ -371,6 +397,38 @@ public class Inventory extends JTabbedPane {
 
 		tab.setVerticalScrollBar(bar);
 		return tab;
+	}
+
+	public JPanel createInvTab(JLayeredPane pane){
+		JTextArea invtext = new JTextArea("INVENTAIRE");
+		invtext.setBounds(width / 4, 0, width, textSize);
+		invtext.setBackground(transparent);
+		invtext.setFont(new Font("Arial Black", Font.BOLD, 100 * data.size / 48));
+		invtext.setFocusable(false);
+
+
+		JPanel pan = new JPanel();
+		JScrollPane tab = new JScrollPane(pane);
+		JScrollBar bar = new JScrollBar();
+
+		tab.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		tab.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		tab.setBackground(myColor);
+		tab.setBounds(width / 20, textSize + height / 20, width / 2, height - textSize * 3);
+		tab.setLayout(null);
+
+		bar.setBounds(0, 0, width / 40, height - textSize * 3);
+		bar.setBackground(Color.GRAY);
+
+		tab.setVerticalScrollBar(bar);
+
+		pan.setLayout(null);
+		pan.setBackground(myColor);
+		scrollInv = tab;
+		pan.add(tab);
+		pan.add(invtext);
+
+		return pan;
 	}
 
 	public Item getItem(String name, Object[][] items){

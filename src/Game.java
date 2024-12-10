@@ -8,7 +8,7 @@ public class Game extends JPanel {
 	
 	public Game(int width, int height) {
 		super();
-		this.data = new Data(width, height, (int)((width + height) / 62.5), 4, new KeyHandler(), this);
+		this.data = new Data(width, height, (int)((width + height) / 62.5), 4 * (width / 1920), new KeyHandler(), this);
 		this.menu = new Menu(data);
 		setPreferredSize(new Dimension(width, height));
 		setBackground(Color.BLACK);

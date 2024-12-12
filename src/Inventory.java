@@ -1,8 +1,8 @@
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Image;
-import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -29,10 +29,17 @@ public class Inventory extends JTabbedPane {
 	private Object[][] listItem;
 
 	public int money;
+	private JTextArea moneyText;
+
 	final private Data data;
 
 	private JLayeredPane invPanel;
 	private JLayeredPane craftPanel;
+
+	private JPanel descPane;
+
+	private JPanel tab1;
+	private JScrollPane tab2;
 
 	private JScrollPane scrollInv;
 
@@ -51,7 +58,7 @@ public class Inventory extends JTabbedPane {
 
 	final private int spaceBetween;
 	
-	Color myColor = new Color(255, 255, 255, 127);
+	Color myColor = new Color(255, 255, 255, 150);
 	Color transparent = new Color(0, 0, 0, 0);
 	//Color myColor = Color.GRAY;
 
@@ -64,7 +71,7 @@ public class Inventory extends JTabbedPane {
 		this.startY = data.height / 10;
 		this.width = (int)(data.width / 1.25);
 		this.height = (int)(data.height / 1.25);
-		this.spaceBetween = width / 20;
+		this.spaceBetween = width / 25;
 		this.textSize = height / 9;
 		this.setBounds(startX, startY, width, height);
 		this.setBackground(myColor);
@@ -81,20 +88,77 @@ public class Inventory extends JTabbedPane {
 		updateInvPanel();
 	}
 
+	public JPanel createDesCard(Slot s){
+		JPanel panel = new JPanel();
+		panel.setBackground(myColor);
+		panel.setLayout(null);
+		int descWidth = width / 3;
+		int descHeight = height - textSize * 3;
+		panel.setBounds(0, 0, descWidth, descHeight);
+		panel.setFocusable(false);
+
+		JLabel image = new JLabel(new ImageIcon(new ImageIcon(s.obj.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
+		image.setBounds(descWidth / 2 - data.size, 0, data.size * 2, data.size * 2);
+		image.setBackground(Color.WHITE);
+
+		JTextArea text = new JTextArea(s.obj.name + " x" + s.nb);
+		text.setBounds(descWidth / 2 - data.size, data.size * 2 + data.size / 2, descWidth / 2, descHeight / 10);
+		text.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
+		text.setBackground(transparent);
+		text.setFocusable(false);
+		text.setForeground(Color.BLACK);
+
+		JTextArea description = new JTextArea("Time to make : " + s.obj.time + "s");
+		description.setBounds(descWidth / 10, data.size * 4, descWidth / 2, descHeight / 10);
+		description.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
+		description.setBackground(transparent);
+		description.setFocusable(false);
+		description.setForeground(Color.BLACK);
+
+		panel.add(image);
+		panel.add(text);
+		panel.add(description);
+		return panel;
+	}
+
+	public void updateMoney(){
+		FontMetrics fontMetrics = moneyText.getFontMetrics(moneyText.getFont());
+
+		moneyText.setText(money + "$");
+		moneyText.setBounds(width - width / 10 - moneyText.getText().length() * fontMetrics.charWidth('7'), height / 50, 
+							moneyText.getText().length() * fontMetrics.charWidth('7'), fontMetrics.getHeight());
+	}
+
 	public void updateInvPanel(){
 		invPanel.removeAll();
 		int i = 0;
 		int j = 0;
-	
+
+		updateMoney();
 		for (Slot s : items){
+			JPanel desc = createDesCard(s);
+
 			JButton button = new JButton(new ImageIcon(new ImageIcon(s.obj.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
-			button.setBounds(data.size * 2 * i + spaceBetween * i, j * data.size * 2 + (j + 1) * spaceBetween, data.size * 2, data.size * 2);
-			
+			button.setBounds(data.size * 2 * i + spaceBetween * (i + 1), j * data.size * 2 + (j + 1) * spaceBetween, data.size * 2, data.size * 2);
+			button.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e){
+					if (desc.getParent() == descPane){
+						descPane.removeAll();
+					} else if (descPane.getComponents() != null){
+						descPane.removeAll();
+						descPane.add(desc);
+					} else {
+						descPane.add(desc);
+					}
+				}
+			});
+			button.setFocusable(false);
+
 			String t = "x" + s.nb;
 
 			JTextArea text = new JTextArea(t);
-			text.setBounds(width / 10 + data.size * 2 * (i + 1) + spaceBetween * i, textSize + j * data.size * 2 + (j + 1) * spaceBetween, t.length() * width / 10, data.size);
-			text.setFont(new Font("Karmatic Arcade", Font.PLAIN, 20 * data.size / 48));
+			text.setBounds(data.size * 2 * (i + 1) + spaceBetween * (i + 1), j * data.size * 2 + (j + 1) * spaceBetween, t.length() * width / 100, height / 10);
+			text.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
 			text.setBackground(transparent);
 			text.setFocusable(false);
 			text.setForeground(Color.BLACK);
@@ -104,7 +168,7 @@ public class Inventory extends JTabbedPane {
 			invPanel.setLayer(button, 1);
 			invPanel.setLayer(text, 2);
 			i++;
-			if (i > 10){
+			if (i >= 4){
 				i = 0;
 				j++;
 			}
@@ -120,7 +184,7 @@ public class Inventory extends JTabbedPane {
 		invPanel.setDoubleBuffered(true);
 		invPanel.setFocusable(true);	
 		invPanel.setLayout(null);
-		updateInvPanel();
+		//updateInvPanel();
 		invPanel.setVisible(true);
 	}
 
@@ -165,9 +229,9 @@ public class Inventory extends JTabbedPane {
 	public void createCraftPanel(){
 		craftPanel.removeAll();
 		JTextArea crafttext = new JTextArea("CRAFT");
-		crafttext.setBounds(width / 3, 0, width, textSize);
+		crafttext.setBounds(width / 2 - width / 10, 0, width, textSize);
 		crafttext.setBackground(transparent);
-		crafttext.setFont(new Font("Arial Black", Font.BOLD, 100 * data.size / 48));
+		crafttext.setFont(new Font("Squealer Embossed", Font.BOLD, 100 * data.size / 48));
 		crafttext.setFocusable(false);
 		nbRecipe = listItem[1].length;
 		craftButton = new JButton[nbRecipe];
@@ -184,11 +248,11 @@ public class Inventory extends JTabbedPane {
 			} 
 
 			JTextArea text = new JTextArea(t);
-			text.setFont(new Font("Arial Black", Font.PLAIN, 30 * data.size / 48));
+			text.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
 			text.setBounds(width / 10 + data.size * 2, textSize + i * data.size + (i + 1) * spaceBetween, t.length() * width / 10, data.size);
 			text.setBackground(transparent);
 			text.setFocusable(false);
-			text.setForeground(Color.WHITE);
+			text.setForeground(Color.BLACK);
 
 			craftButton[i] = createCraftButtun(r, i);
 			craftPanel.add(craftButton[i]);
@@ -261,11 +325,22 @@ public class Inventory extends JTabbedPane {
 		InitializeInvPanel();
 		InitializeButton();
 
-		JPanel tab1 = createInvTab(invPanel);
-		JScrollPane tab2 = createCraftTab(craftPanel);
+		tab1 = createInvTab(invPanel);
+		tab2 = createCraftTab(craftPanel);
 
+		moneyText = new JTextArea(money + "$");
+		moneyText.setBounds(width - width / 10, height / 50, moneyText.getText().length() * width / 100, height / 10);
+		moneyText.setBackground(transparent);
+		moneyText.setForeground(Color.BLACK);
+		moneyText.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
+
+		tab1.add(moneyText);
+		tab1.setFocusable(false);
+		tab2.setFocusable(false);
+		tab1.add(descPane);
 		this.addTab("Inventory", tab1);
 		this.addTab("Craft", tab2);
+		updateInvPanel();
 		InitializeTab();
 		startingInventory(fileMap);
 		updateCraftPanel();
@@ -337,6 +412,7 @@ public class Inventory extends JTabbedPane {
 			invOpen = true;
 		}
 		else {
+			descPane.removeAll();
 			data.panel.remove(this);
 			invOpen = false;
 		}
@@ -373,14 +449,15 @@ public class Inventory extends JTabbedPane {
 
 	public void	addMoney(int amount){
 		money += amount;
+		updateMoney();
 	}
 
-	public boolean removeMoney(int amount){
+	public void removeMoney(int amount){
 		if (amount > money){
-			return false;
+			return ;
 		}
 		money -= amount;
-		return true;
+		updateMoney();
 	}
 
 	public JScrollPane createCraftTab(JLayeredPane pane){
@@ -391,6 +468,7 @@ public class Inventory extends JTabbedPane {
 		tab.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		tab.setBackground(myColor);
 		tab.setPreferredSize(new Dimension(width, height));
+		tab.setFocusable(false);
 
 		bar.setBounds(0, height / 80, width / 30, height - height / 10);
 		bar.setBackground(Color.GRAY);
@@ -401,33 +479,40 @@ public class Inventory extends JTabbedPane {
 
 	public JPanel createInvTab(JLayeredPane pane){
 		JTextArea invtext = new JTextArea("INVENTAIRE");
-		invtext.setBounds(width / 4, 0, width, textSize);
+		invtext.setBounds(width / 3, 0, width, textSize);
 		invtext.setBackground(transparent);
-		invtext.setFont(new Font("Arial Black", Font.BOLD, 100 * data.size / 48));
+		invtext.setFont(new Font("Squealer Embossed", Font.BOLD, 100 * data.size / 48));
 		invtext.setFocusable(false);
 
-
 		JPanel pan = new JPanel();
-		JScrollPane tab = new JScrollPane(pane);
+		JScrollPane tab = new JScrollPane();
 		JScrollBar bar = new JScrollBar();
 
 		tab.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		tab.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		tab.setBackground(myColor);
 		tab.setBounds(width / 20, textSize + height / 20, width / 2, height - textSize * 3);
-		tab.setLayout(null);
+		tab.setFocusable(false);
 
-		bar.setBounds(0, 0, width / 40, height - textSize * 3);
+		bar.setBounds(width / 2 - width / 40, 0, width / 40, height - textSize * 3);
 		bar.setBackground(Color.GRAY);
 
 		tab.setVerticalScrollBar(bar);
+		tab.getViewport().add(pane);
 
 		pan.setLayout(null);
 		pan.setBackground(myColor);
+		pan.setFocusable(false);
 		scrollInv = tab;
 		pan.add(tab);
 		pan.add(invtext);
 
+		descPane = new JPanel();
+		descPane.setOpaque(true);
+		descPane.setBackground(transparent);
+		descPane.setLayout(null);
+		descPane.setBounds(width / 2 + width / 10, textSize + height / 20, width / 3, height - textSize * 3);
+		descPane.setFocusable(false);
 		return pan;
 	}
 

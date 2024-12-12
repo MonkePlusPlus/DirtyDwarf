@@ -8,6 +8,9 @@ public class KeyHandler implements KeyListener {
 	public boolean key_e = false;
 	public boolean pause = false;
 
+	public boolean moneyP;
+	public boolean moneyM;
+
 
 	@Override
 	public void keyTyped(KeyEvent e){
@@ -38,6 +41,12 @@ public class KeyHandler implements KeyListener {
 		} else if (code == KeyEvent.VK_E && key_e == true) {
 			key_e = false;
 		}
+		if (code == KeyEvent.VK_P){
+			moneyP = true;
+		}
+		if (code == KeyEvent.VK_O){
+			moneyM = true;
+		}
 	}
 
 	@Override
@@ -58,6 +67,12 @@ public class KeyHandler implements KeyListener {
 		}
 		if (code == KeyEvent.VK_RIGHT){
 			right = false;
+		}
+		if (code == KeyEvent.VK_P){
+			moneyP = false;
+		}
+		if (code == KeyEvent.VK_O){
+			moneyM = false;
 		}
 	}
 }

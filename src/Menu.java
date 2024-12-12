@@ -56,7 +56,7 @@ public class Menu extends JPanel {
 	public void InitialiseMenu(){
 		titleScreen = new JTextArea("DIRTY DWARF");
 		titleScreen.setBounds(data.width / 5, data.height / 10, data.width, data.height / 5);
-		titleScreen.setFont(new Font("Arial Black", Font.BOLD, 150 * (data.width / 1920)));
+		titleScreen.setFont(new Font("Squealer", Font.BOLD, 150 * (data.width / 1920)));
 		titleScreen.setOpaque(true);
 		titleScreen.setBackground(new Color(0, 0, 0, 0));
 		titleScreen.setForeground(Color.WHITE);
@@ -91,8 +91,8 @@ public class Menu extends JPanel {
 
 	public void InitializeLevel(){
 		this.player = new Player(data);
-		this.map = new Map(data, fileMap);
 		this.inventory = new Inventory(data);
+		this.map = new Map(data, fileMap, inventory);
 		this.menuPause = new MenuPause(data);
 
 		player.InitializePlayer(0, 0);

@@ -11,6 +11,8 @@ public class Map {
 	
 	private Data data;
 	private Game game;
+	private Inventory inventory;
+
 	private File fileMap;
 	private String[][] stringMap;
 	private Block[][] blockMap;
@@ -33,8 +35,9 @@ public class Map {
 	private BufferedImage tiles;
 	private int sizeTile = 48;
 
-	public Map(Data data, File file){
+	public Map(Data data, File file, Inventory inventory){
 		this.data = data;
+		this.inventory = inventory;
 		this.centerX = data.width / 2 - (data.size / 2);
 		this.centerY = data.height / 2 - (data.size / 2);
 		this.fileMap = file;
@@ -221,6 +224,12 @@ public class Map {
 			moveRight();
 			if (checkCollision() == false)
 				moveLeft();
+		}
+		if (data.key.moneyP){
+			inventory.addMoney(100);
+		}
+		if (data.key.moneyM){
+			inventory.removeMoney(100);
 		}
 	}
 

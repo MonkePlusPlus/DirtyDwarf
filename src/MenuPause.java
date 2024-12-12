@@ -55,7 +55,7 @@ public class MenuPause extends JPanel {
 
 		title = new JTextArea("PAUSE");
 		title.setBounds(data.width / 3, data.height / 10, data.width, data.height / 5);
-		title.setFont(new Font("Arial Black", Font.BOLD, 150 * (data.width / 1920)));
+		title.setFont(new Font("Squealer", Font.BOLD, 150 * (data.width / 1920)));
 		title.setOpaque(true);
 		title.setBackground(new Color(0, 0, 0, 0));
 		title.setForeground(Color.WHITE);

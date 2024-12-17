@@ -7,12 +7,17 @@ public class Item extends Object {
 	public String symb;
 	public int time;
 	public BufferedImage image;
+	public int price;
 
-	public Item(String name, String symb, int time, BufferedImage image){
+	public Item(String name, String symb, int time, int price, BufferedImage image){
 		this.name = name;
 		this.symb = symb;
 		this.time = time;
 		this.image = image;
+	}
+
+	public boolean checkPrice(Inventory inventory) {
+		return (inventory.money <= price);
 	}
 
 	public String getSymb(){

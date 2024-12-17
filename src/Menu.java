@@ -97,7 +97,7 @@ public class Menu extends JPanel {
 
 		player.InitializePlayer(0, 0);
 		map.InitializeMap();
-		inventory.InitializeInventory(map.listItem, fileMap);
+		inventory.InitializeInventory(map.listObj, fileMap);
 		menuPause.InitializeMenuPause(this, inventory);
 		map.printMap();
 

@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
 
@@ -16,7 +17,12 @@ public class Map {
 	private File fileMap;
 	private String[][] stringMap;
 	private Block[][] blockMap;
-	public Object[][] listItem;
+	public LinkedList<Object>[] listObj;
+
+	private BufferedImage floorImg;
+	private BufferedImage wallImg;
+	private BufferedImage shopImg;
+	private BufferedImage startImg;
 	
 	private int lenX = 0;
 	private int lenY = 0;
@@ -49,6 +55,10 @@ public class Map {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		wallImg = tiles.getSubimage(sizeTile, sizeTile * blockIndex, sizeTile, sizeTile);
+		floorImg = tiles.getSubimage(0, sizeTile * blockIndex, sizeTile, sizeTile);
+		startImg = tiles.getSubimage(sizeTile * 2, 0, sizeTile, sizeTile);
+		shopImg = tiles.getSubimage(sizeTile * 5, 0, sizeTile, sizeTile);
 		System.out.println("Initialing map");
 		InitializeStringMap();
 		InitializeItem();
@@ -78,18 +88,20 @@ public class Map {
 		for (int i = 0; i < lenY; i++){
 			for (int j = 0; j < lenX; j++){
 				if (stringMap[i][j].equals("1")) {
-					blockMap[i][j] = new Block(data, j, i, true, tiles.getSubimage(sizeTile, sizeTile * blockIndex, sizeTile, sizeTile));
+					blockMap[i][j] = new Block(data, j, i, true, wallImg);
 				} else if (stringMap[i][j].equals("0")) {
-					blockMap[i][j] = new Block(data, j, i, false, tiles.getSubimage(0, sizeTile * blockIndex, sizeTile, sizeTile));
+					blockMap[i][j] = new Block(data, j, i, false, floorImg);
 				} else if (stringMap[i][j].equals("P")){
 					startPosX = j;
 					startPosY = i;
-					blockMap[i][j] = new Block(data, j, i, false, tiles.getSubimage(sizeTile * 2, 0, sizeTile, sizeTile));
+					blockMap[i][j] = new Block(data, j, i, false, startImg);
 				} else if (stringMap[i][j].equals("N")) {
 					blockMap[i][j] = new Block(data, j, i, true, null);
+				} else if (stringMap[i][j].equals("M")) {
+					blockMap[i][j] = new Shop(data, j, i, true, shopImg);
 				} else {
 					int index = 0;
-					for (Object o : listItem[0]){
+					for (Object o : listObj[0]){
 						Item item = (Item)o;
 						if (stringMap[i][j].equals(item.getSymb())){
 							blockMap[i][j] = new Ressource(item, data, j, i, true, 
@@ -148,6 +160,10 @@ public class Map {
 		String[] tab;
 		int i = 0;
 
+		listObj = new LinkedList[3];
+		listObj[0] = new LinkedList<Object>();
+		listObj[1] = new LinkedList<Object>();
+		listObj[2] = new LinkedList<Object>();
 		try {
 			scan = new Scanner(fileMap);
 			line = scan.nextLine();
@@ -155,23 +171,21 @@ public class Map {
 				line = scan.nextLine();
 			}
 			line = scan.nextLine();
-			tabItem = (line.split(":"))[1].split("_");
+			tabItem = (line.split(":"))[1].split(";");
 			line = scan.nextLine();
-			tabRecipe = (line.split(":"))[1].split("_");
-			listItem = new Item[2][];
-			listItem[0] = new Item[tabItem.length];
-			listItem[1] = new Item[tabRecipe.length];
+			tabRecipe = (line.split(":"))[1].split(";");
+
 			for (String s : tabItem){
-				tab = s.split(";");
-				listItem[0][i] = new Item(tab[0], tab[1], Integer.parseInt(tab[2]),
-								tiles.getSubimage(sizeTile * i, sizeTile * itemIndex, sizeTile, sizeTile));
+				tab = s.split("_");
+				listObj[0].add(new Item(tab[0], tab[1], Integer.parseInt(tab[2]), Integer.parseInt(tab[3]),
+								tiles.getSubimage(sizeTile * i, sizeTile * itemIndex, sizeTile, sizeTile)));
 				i++;
 			}
 			i = 0;
 			for (String s : tabRecipe){
-				tab = s.split(";");
-				listItem[1][i] = new Recipe(tab[0], tab[1], null, Integer.parseInt(tab[2]),
-								tiles.getSubimage(sizeTile * i, sizeTile * recipeIndex, sizeTile, sizeTile));
+				tab = s.split("_");
+				listObj[1].add(new Recipe(tab[0], tab[1], null, Integer.parseInt(tab[2]), Integer.parseInt(tab[3]),
+								tiles.getSubimage(sizeTile * i, sizeTile * recipeIndex, sizeTile, sizeTile)));
 				i++;
 			}
 			System.out.println();
@@ -179,8 +193,8 @@ public class Map {
 		} catch (FileNotFoundException e){
 			return false;
 		}
-		for (Object o : listItem[1]){
-			((Recipe)o).createIngredient(listItem);
+		for (Object o : listObj[1]){
+			((Recipe)o).createIngredient(listObj);
 		}
 		return true;
 	}

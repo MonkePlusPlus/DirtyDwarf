@@ -26,7 +26,7 @@ import javax.swing.UIManager;
 public class Inventory extends JTabbedPane {
 	
 	private LinkedList<Slot> items;
-	private Object[][] listItem;
+	private LinkedList<Object>[] listObj;
 
 	public int money;
 	private JTextArea moneyText;
@@ -233,10 +233,10 @@ public class Inventory extends JTabbedPane {
 		crafttext.setBackground(transparent);
 		crafttext.setFont(new Font("Squealer Embossed", Font.BOLD, 100 * data.size / 48));
 		crafttext.setFocusable(false);
-		nbRecipe = listItem[1].length;
+		nbRecipe = listObj[1].size();
 		craftButton = new JButton[nbRecipe];
 		for (int i = 0; i < nbRecipe; i++){
-			Recipe r = (Recipe)listItem[1][i];
+			Recipe r = (Recipe)listObj[1].get(i);
 
 			JLabel lab = new JLabel(new ImageIcon(new ImageIcon(r.image).getImage().getScaledInstance(data.size, data.size, Image.SCALE_DEFAULT)));
 			lab.setBounds(width / 10, textSize + i * data.size + (i + 1) * spaceBetween, data.size, data.size);
@@ -264,7 +264,7 @@ public class Inventory extends JTabbedPane {
 
 	public void updateCraftPanel(){
 		int i = 0;
-		for (Object o : listItem[1]){
+		for (Object o : listObj[1]){
 			Recipe r = (Recipe)o;
 			System.out.println(r.name);
 			if (!checkIngredient(r)) {
@@ -298,7 +298,7 @@ public class Inventory extends JTabbedPane {
 	public void InitializeCraftPanel(){
 		craftPanel = new JLayeredPane();
 		craftPanel.setBackground(transparent);
-		craftPanel.setPreferredSize(new Dimension(width, textSize + listItem[1].length * data.size + (listItem[1].length + 1) * spaceBetween));
+		craftPanel.setPreferredSize(new Dimension(width, textSize + listObj[1].size() * data.size + (listObj[1].size() + 1) * spaceBetween));
 		craftPanel.setDoubleBuffered(true);
 		craftPanel.setOpaque(true);
 		craftPanel.setFocusable(true);
@@ -319,8 +319,8 @@ public class Inventory extends JTabbedPane {
 		this.setTabComponentAt(1, lab2);
 	}
 
-	public void InitializeInventory(Object[][] listItems, File fileMap){
-		this.listItem = listItems;
+	public void InitializeInventory(LinkedList<Object>[] listObj, File fileMap){
+		this.listObj = listObj;
 		InitializeCraftPanel();
 		InitializeInvPanel();
 		InitializeButton();
@@ -382,11 +382,11 @@ public class Inventory extends JTabbedPane {
 	}
 
 	public void fillInventory(String startInv){
-		String[] items = startInv.split("_");
-
-		for (String s : items){
+		String[] item = startInv.split(";");
+		
+		for (String s : item){
 			String[] i = s.split("-");
-			addObj(getItem(i[1], listItem), Integer.valueOf(i[0]));
+			addObj(getItem(i[1], listObj), Integer.valueOf(i[0]));
 		}
 	}
 
@@ -516,7 +516,7 @@ public class Inventory extends JTabbedPane {
 		return pan;
 	}
 
-	public Item getItem(String name, Object[][] items){
+	public Item getItem(String name, LinkedList<Object>[] items){
 		for (int n = 0; n < 2; n++){
 			for (Object o : items[n]){
 				Item i = (Item)o;

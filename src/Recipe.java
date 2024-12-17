@@ -1,5 +1,6 @@
 
 import java.awt.image.BufferedImage;
+import java.util.LinkedList;
 
 public class Recipe extends Item {
 	
@@ -7,23 +8,23 @@ public class Recipe extends Item {
 	public Slot[] ingredients;
 	public int nbIngredient;
 
-	public Recipe(String name, String ingredient, String symb, int time, BufferedImage image){
-		super(name, symb, time, image);
+	public Recipe(String name, String ingredient, String symb, int time, int price, BufferedImage image){
+		super(name, symb, time, price, image);
 		this.ingredient = ingredient;
 	}
 
-	public void createIngredient(Object[][] listItems){
+	public void createIngredient(LinkedList<Object>[] listObj){
 		System.out.println(name + " = " + ingredient);
 		String[] items = ingredient.split("\\+");
 		this.nbIngredient = items.length;
 		ingredients = new Slot[nbIngredient];
 		for (int i = 0;i < nbIngredient; i++){
 			String[] item = items[i].split("-");
-			ingredients[i] = new Slot(getItem(item[1], listItems), Integer.valueOf(item[0]));
+			ingredients[i] = new Slot(getItem(item[1], listObj), Integer.valueOf(item[0]));
 		}
 	}
 
-	public Item getItem(String name, Object[][] items){
+	public Item getItem(String name, LinkedList<Object>[] items){
 		for (int n = 0; n < 2; n++){
 			for (Object o : items[n]){
 				Item i = (Item)o;

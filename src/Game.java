@@ -3,12 +3,17 @@ import javax.swing.*;
 
 public class Game extends JPanel {
 
+	private JFrame window;
 	private Data data;
 	private Menu menu;
+	private Mouse mouse;
 	
-	public Game(int width, int height) {
+	public Game(int width, int height, JFrame window) {
 		super();
-		this.data = new Data(width, height, (int)((width + height) / 62.5), 4 * (width / 1920), new KeyHandler(), this);
+		this.window = window;
+		this.mouse = new Mouse();
+		this.data = new Data(width, height, (int)((width + height) / 62.5), 4 * (width / 1920), new KeyHandler(), window, this, mouse);
+		mouse.data = data;
 		this.menu = new Menu(data);
 		setPreferredSize(new Dimension(width, height));
 		setBackground(Color.BLACK);

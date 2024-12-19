@@ -95,6 +95,9 @@ public class Menu extends JPanel {
 	}
 
 	public void initializeLevel(){
+		data.window.addMouseListener(data.mouse);
+		data.window.addMouseMotionListener(data.mouse);
+
 		this.player = new Player(data);
 		this.inventory = new Inventory(data);
 		this.map = new Map(data, fileMap, inventory);

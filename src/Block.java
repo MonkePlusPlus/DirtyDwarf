@@ -2,7 +2,7 @@
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
-public class Block {
+public class Block extends Tile {
 	public Data data;
 	public boolean collision;
 	public BufferedImage image;
@@ -19,6 +19,10 @@ public class Block {
 		this.image = image;
 		this.posX = x * data.size;
 		this.posY = y * data.size;
+	}
+
+	public TileType getType(){
+		return ((collision) ? TileType.FLOOR : TileType.WALL);
 	}
 
 	public void moveBlockX(int speed){
@@ -68,5 +72,20 @@ public class Block {
 
 	public boolean getCollission(){
 		return collision;
+	}
+
+	public double getDistance(){
+		int centerX = data.width / 2 - (data.size / 2);
+		int centerY = data.height / 2 - (data.size / 2);
+
+		double distance = Math.sqrt(Math.pow(Math.abs(centerX - (posX + data.size / 2)), 2)
+						+ Math.pow(Math.abs(centerY - (posY + data.size / 2)), 2));
+		
+		return distance;
+	}
+
+	@Override
+	public void mouseClick(){
+		
 	}
 }

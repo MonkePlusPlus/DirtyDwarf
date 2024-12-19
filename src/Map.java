@@ -1,5 +1,7 @@
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,7 +19,7 @@ public class Map {
 
 	private File fileMap;
 	private String[][] stringMap;
-	private Block[][] blockMap;
+	private Tile[][] tileMap;
 	public LinkedList<Object>[] listObj;
 
 	private BufferedImage floorImg;
@@ -63,14 +65,16 @@ public class Map {
 		System.out.println("initialing map");
 		initializeStringMap();
 		initializeItem();
-		initializeBlockMap();
+		initializeTileMap();
 		initializePos();
+
 		return true;
 	}
 
 	public void initializePos(){
 		for (int i = 0; i < lenY; i++){
-			for (Block b : blockMap[i]){
+			for (Tile t : tileMap[i]){
+				Block b = (Block)t;
 				b.initializePos(startPosX, startPosY);
 			}
 		}
@@ -90,37 +94,37 @@ public class Map {
 		shop.initialiseShopButton();
 	}
 
-	public boolean initializeBlockMap(){
-		blockMap = new Block[lenY][lenX];
+	public boolean initializeTileMap(){
+		tileMap = new Block[lenY][lenX];
 		System.out.println("x : " + lenX + " y : " + lenY);
 		for (int i = 0; i < lenY; i++){
 			for (int j = 0; j < lenX; j++){
 				if (stringMap[i][j].equals("1")) {
-					blockMap[i][j] = new Block(data, j, i, true, wallImg);
+					tileMap[i][j] = new Block(data, j, i, true, wallImg);
 				} else if (stringMap[i][j].equals("0")) {
-					blockMap[i][j] = new Block(data, j, i, false, floorImg);
+					tileMap[i][j] = new Block(data, j, i, false, floorImg);
 				} else if (stringMap[i][j].equals("P")){
 					startPosX = j;
 					startPosY = i;
-					blockMap[i][j] = new Block(data, j, i, false, startImg);
+					tileMap[i][j] = new Block(data, j, i, false, startImg);
 				} else if (stringMap[i][j].equals("N")) {
-					blockMap[i][j] = new Block(data, j, i, true, null);
+					tileMap[i][j] = new Block(data, j, i, true, null);
 				} else if (stringMap[i][j].equals("M")) {
-					blockMap[i][j] = new Shop(data, j, i, true, shopImg, inventory);
-					shop = (Shop)blockMap[i][j];
+					tileMap[i][j] = new Shop(data, j, i, true, shopImg, inventory);
+					shop = (Shop)tileMap[i][j];
 					createShop();
 				} else {
 					int index = 0;
 					for (Object o : listObj[0]){
 						Item item = (Item)o;
 						if (stringMap[i][j].equals(item.getSymb())){
-							blockMap[i][j] = new Ressource(item, data, j, i, true, 
+							tileMap[i][j] = new Ressource(item, data, j, i, true, 
 											tiles.getSubimage(sizeTile * index, sizeTile * ressourceIndex, sizeTile, sizeTile));
 							break ;
 						}
 						index++;
 					}
-					if (blockMap[i][j] == null)
+					if (tileMap[i][j] == null)
 						return false;
 				}
 			}
@@ -211,20 +215,65 @@ public class Map {
 
 	public void drawMap(Graphics2D g){
 		for (int i = 0; i < lenY; i++){
-			if (blockMap == null){
+			if (tileMap == null){
 				System.out.println("failed to load map");
 				return ;
 			}
-			if (blockMap[i] == null){
+			if (tileMap[i] == null){
 				System.out.println("failed to load : block" + i);
 			}
-			for (Block b : blockMap[i]){
+			for (Tile t : tileMap[i]){
+				Block b = (Block)t;
 				if (b == null){
 					System.out.println("failed to load in block[i] : " + i);
 				} else {
 					b.drawBlock(g);
+					b.mouseClick();
 				}
 			}
+		}
+		Rectangle r = getPosMouse();
+		if (!windowOpen()){
+			data.mouse.drawSelect(g, r, getColorMouse(r));
+		}
+	}
+
+	public boolean windowOpen(){
+		return (inventory.isOpen() || shop.isOpen());
+	}
+
+	public Rectangle getPosMouse(){
+		for (int i = 0; i < lenY; i++){
+			for (Tile t : tileMap[i]) {
+				Block b = (Block)t;
+				if (data.mouse.x <= b.getPosX() + data.size && 
+					data.mouse.x >= b.getPosX() &&
+					data.mouse.y <= b.getPosY() + data.size &&
+					data.mouse.y >= b.getPosY()
+				){
+					return (new Rectangle(b.getPosX(), b.getPosY(), data.size, data.size));
+				}
+			}
+		}
+		return null;
+	}
+
+	public Color getColorMouse(Rectangle r){
+		if (r == null){
+			return Color.BLACK;
+		}
+		int centerX = data.width / 2 - (data.size / 2);
+		int centerY = data.height / 2 - (data.size / 2);
+
+		int x = ((((int)r.getX() - updateX) - centerX) / data.size) + startPosX;
+		int y = ((((int)r.getY() - updateY) - centerY) / data.size) + startPosY;
+
+		double distance = Math.sqrt(Math.pow(Math.abs(centerX - (r.getX() + data.size / 2)), 2)
+						+ Math.pow(Math.abs(centerY - (r.getY() + data.size / 2)), 2));
+
+		switch (tileMap[y][x].getType()){
+			case WALL : case FLOOR : return Color.WHITE;
+			default: return ((distance <= data.size * 3) ? Color.GREEN : Color.RED);
 		}
 	}
 
@@ -276,7 +325,8 @@ public class Map {
 
 	public void moveUp(){
 		for (int i = 0; i < lenY; i++){
-			for (Block b : blockMap[i]){
+			for (Tile t : tileMap[i]){
+				Block b = (Block)t;
 				b.moveBlockY(data.speed);
 			}
 		}
@@ -285,7 +335,8 @@ public class Map {
 
 	public void moveDown(){
 		for (int i = 0; i < lenY; i++){
-			for (Block b : blockMap[i]){
+			for (Tile t : tileMap[i]){
+				Block b = (Block)t;
 				b.moveBlockY(-data.speed);
 			}
 		}
@@ -294,7 +345,8 @@ public class Map {
 
 	public void moveLeft(){
 		for (int i = 0; i < lenY; i++){
-			for (Block b : blockMap[i]){
+			for (Tile t : tileMap[i]){
+				Block b = (Block)t;
 				b.moveBlockX(data.speed);
 			}
 		}
@@ -303,7 +355,8 @@ public class Map {
 
 	public void moveRight(){
 		for (int i = 0; i < lenY; i++){
-			for (Block b : blockMap[i]){
+			for (Tile t : tileMap[i]){
+				Block b = (Block)t;
 				b.moveBlockX(-data.speed);
 			}
 		}
@@ -312,7 +365,8 @@ public class Map {
 
 	public boolean checkCollision(){
 		for (int i = 0; i < lenY; i++){
-			for (Block b : blockMap[i]){
+			for (Tile t : tileMap[i]){
+				Block b = (Block)t;
 				if (b.getCollission() == true) {
 					if (b.getPosY() > data.height / 2 - (data.size / 2) - data.size &&
 						b.getPosY() < data.height / 2 + (data.size / 2) &&
@@ -329,7 +383,7 @@ public class Map {
 	/* 
 	public boolean collisionUp(){
 		for (int i = 0; i < lenX; i++){
-			for (Block b : blockMap[i]){
+			for (Block b : tileMap[i]){
 				if (b.getCollission() == true) {
 					if (b.getPosY() + 48 < height / 2 - (sizeTile / 2) &&
 						b.getPosY() + 48 + speed >= height / 2 - (sizeTile / 2) &&
@@ -345,7 +399,7 @@ public class Map {
 
 	public boolean collisionDown(){
 		for (int i = 0; i < lenX; i++){
-			for (Block b : blockMap[i]){
+			for (Block b : tileMap[i]){
 				if (b.getCollission() == true) {
 					if (b.getPosY() - 48 > height / 2 - (sizeTile / 2) &&
 						b.getPosY() - 48 - speed <= height / 2 - (sizeTile / 2) &&
@@ -362,7 +416,7 @@ public class Map {
 
 	public boolean collisionLeft(){
 		for (int i = 0; i < lenX; i++){
-			for (Block b : blockMap[i]){
+			for (Block b : tileMap[i]){
 				if (b.getCollission() == true) {
 					if (b.getPosY() > height / 2 - (sizeTile / 2) - 48 &&
 						b.getPosY() < height / 2 + (sizeTile / 2) &&
@@ -379,7 +433,7 @@ public class Map {
 
 	public boolean collisionRight(){
 		for (int i = 0; i < lenX; i++){
-			for (Block b : blockMap[i]){
+			for (Block b : tileMap[i]){
 				if (b.getCollission() == true) {
 					if (b.getPosY() > height / 2 - (sizeTile / 2) - 48 &&
 						b.getPosY() < height / 2 + (sizeTile / 2) &&

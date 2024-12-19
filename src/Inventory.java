@@ -3,6 +3,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Image;
+import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -561,5 +562,10 @@ public class Inventory extends JTabbedPane {
 
 	public void getShop(Shop shop){
 		this.shop = shop;
+	}
+
+
+	public boolean isOpen(){
+		return (data.panel.isAncestorOf(this));
 	}
 }

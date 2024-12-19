@@ -8,4 +8,9 @@ public class Ressource extends Block {
 		super(data, x, y, col, image);
 		this.object = o;
 	}
+
+	@Override
+	public TileType getType(){
+		return TileType.RESSOURCE;
+	}
 }

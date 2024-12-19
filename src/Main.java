@@ -24,7 +24,7 @@ public class Main {
 
 		device.setFullScreenWindow(window);
 
-		Run runnable = new Run(width, height);
+		Run runnable = new Run(width, height, window);
 		SwingUtilities.invokeLater(runnable);
 
 		window.add(runnable.game);

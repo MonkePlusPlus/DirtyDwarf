@@ -7,21 +7,19 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.time.MonthDay;
+import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
-import java.util.function.ObjDoubleConsumer;
-
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-
 import javax.swing.JLabel;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
@@ -46,6 +44,7 @@ public class Shop extends Block {
 	private JScrollPane sellSrollPane;
 	private JLayeredPane sellObjPane;
 	private JTextArea sellText;
+	private JLabel shopImage;
 
 	private JTextArea moneyText;
 
@@ -55,6 +54,8 @@ public class Shop extends Block {
 	final private int height;
 	final private int textSize;
 	final private int spaceBetween;
+
+	private BufferedImage shopKepper;
 
 	private JButton shopButton;
 	private boolean shopOpen;
@@ -73,6 +74,16 @@ public class Shop extends Block {
 		this.textSize = height / 9;
 		this.spaceBetween = width / 25;
 		this.shopOpen = false;
+		try {
+			shopKepper = ImageIO.read(new File("asset/shop.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public TileType getType(){
+		return TileType.SHOP;
 	}
 
 	public void initialiseObjShop(LinkedList<Object>[] listObj) {
@@ -92,6 +103,12 @@ public class Shop extends Block {
 		initialiseBuyPane();
 		initialiseSellPane();
 		initialiseMainPane();
+	}
+
+	public void updateShop(){
+		updateMoney();
+		updateBuyPane();
+		updateSellPane();
 	}
 
 	public void initialiseMainPane(){
@@ -190,8 +207,7 @@ public class Shop extends Block {
 				public void actionPerformed(ActionEvent e){
 					inventory.addObj(item, 1);
 					inventory.money -= item.price;
-					updateBuyPane();
-					updateMoney();
+					updateShop();
 				}
 			});
 
@@ -249,12 +265,18 @@ public class Shop extends Block {
 		sellObjPane = createSellObjPane();
 		sellSrollPane.getViewport().add(sellObjPane);
 
+		shopImage = new JLabel(new ImageIcon(new ImageIcon(shopKepper).getImage().getScaledInstance(width / 3, height - textSize * 3, Image.SCALE_DEFAULT)));
+		shopImage.setFocusable(false);
+		shopImage.setBackground(transparent);
+		shopImage.setBounds(0, 0, width / 3, height - textSize * 3);
+
 		objDescPane = new JPanel();
 		objDescPane.setOpaque(true);
 		objDescPane.setBackground(transparent);
 		objDescPane.setLayout(null);
 		objDescPane.setBounds(width / 2 + width / 10, textSize + height / 20, width / 3, height - textSize * 3);
 		objDescPane.setFocusable(false);
+		objDescPane.add(shopImage);
 
 		sellPane.add(sellText);
 		sellPane.add(sellSrollPane);
@@ -274,8 +296,10 @@ public class Shop extends Block {
 	}
 
 	public JPanel createObjDesc(Slot s){
+		int price = (80 * s.obj.price) / 100;
 		int descWidth = width / 3;
 		int descHeight = height - textSize * 3;
+		System.out.println("width = " + descWidth + " height = " + descHeight);
 
 		JPanel panel = new JPanel();
 		panel.setBackground(myColor);
@@ -305,14 +329,37 @@ public class Shop extends Block {
 		number.setBounds(descWidth - descWidth / 3, descHeight - descHeight / 3, descWidth / 4, descHeight / 10);
 		number.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
 
+		JButton sellButton = new JButton(price + "$");
+		sellButton.setBounds(descWidth / 10, descHeight - descHeight / 3, descWidth / 2, descHeight / 10);
+		sellButton.setBackground(Color.YELLOW);
+		sellButton.setFocusable(false);
+		sellButton.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
+		sellButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e){
+				int nb = Integer.parseInt((String)number.getSelectedItem());
+				inventory.deleteObj(s.obj, nb);
+				inventory.money += (price * nb);
+				objDescPane.removeAll();
+				objDescPane.add(shopImage);
+				updateShop();
+			}
+		});
+
+	
      	DefaultListCellRenderer listRenderer = new DefaultListCellRenderer();
 		listRenderer.setHorizontalAlignment(DefaultListCellRenderer.CENTER); // center-aligned items
 		number.setRenderer(listRenderer);
 		number.setFocusable(false);
+		number.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e){
+				sellButton.setText((price * Integer.parseInt((String)number.getSelectedItem())) + "$");
+			}
+		});
 
 		panel.add(image);
 		panel.add(text);
 		panel.add(number);
+		panel.add(sellButton);
 		return panel;
 	}
 
@@ -336,6 +383,7 @@ public class Shop extends Block {
 				public void actionPerformed(ActionEvent e){
 					if (objDesc.getParent() == objDescPane){
 						objDescPane.removeAll();
+						objDescPane.add(shopImage);
 					} else if (objDescPane.getComponents() != null){
 						objDescPane.removeAll();
 						objDescPane.add(objDesc);
@@ -432,9 +480,7 @@ public class Shop extends Block {
 	public void drawShop(){
 		if (shopOpen == false){
 			inventory.removeInventory();
-			updateMoney();
-			updateBuyPane();
-			updateSellPane();
+			updateShop();
 			data.panel.add(mainPane);
 			shopOpen = true;
 		}
@@ -452,6 +498,28 @@ public class Shop extends Block {
 			data.panel.revalidate();
 			data.panel.requestFocusInWindow();
 			shopOpen = false;
+		}
+	}
+
+	public boolean isOpen(){
+		return (data.panel.isAncestorOf(mainPane));
+	}
+
+	@Override
+	public void mouseClick(){
+		if (data.mouse.click){
+			if (data.mouse.x <= getPosX() + data.size && 
+					data.mouse.x >= getPosX() &&
+					data.mouse.y <= getPosY() + data.size &&
+					data.mouse.y >= getPosY()
+			){
+				drawShop();
+				try {
+					wait(100);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 }

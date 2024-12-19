@@ -1,13 +1,18 @@
 
+import javax.swing.JFrame;
+
+
 public class Run implements Runnable {
 	
 	private int fps = 60;
 	Thread gThread;
 	public Game game;
+	public JFrame window;
 
-	public Run(int width, int height) {
-		this.game = new Game(width, height);
+	public Run(int width, int height, JFrame window) {
+		this.game = new Game(width, height, window);
 		this.game.initializeGame();
+		this.window = window;
 	}
 
 	public void startGthread(){

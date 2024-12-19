@@ -34,7 +34,7 @@ public class Main {
 		window.setLocationRelativeTo(null);
 		window.setVisible(true);
 
-		runnable.game.InitializeGame();
+		runnable.game.initializeGame();
 		runnable.startGthread();
 	}
 }

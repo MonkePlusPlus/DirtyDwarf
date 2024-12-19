@@ -29,7 +29,7 @@ public class Player {
 		}
 	}
 
-	public void InitializePlayer(int x, int y){
+	public void initializePlayer(int x, int y){
 		this.x = data.width / 2 - (data.size / 2);
 		this.y = data.height / 2 - (data.size / 2);
 		this.posX = x;

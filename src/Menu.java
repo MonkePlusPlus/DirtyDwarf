@@ -53,7 +53,7 @@ public class Menu extends JPanel {
 		}
 	}
 
-	public void InitialiseMenu(){
+	public void initialiseMenu(){
 		titleScreen = new JTextArea("DIRTY DWARF");
 		titleScreen.setBounds(data.width / 5, data.height / 10, data.width, data.height / 5);
 		titleScreen.setFont(new Font("Squealer", Font.BOLD, 150 * (data.width / 1920)));
@@ -77,7 +77,7 @@ public class Menu extends JPanel {
 		contButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e){
 				data.panel.removeAll();
-				InitializeLevel();
+				initializeLevel();
 				running = true;
 			}
 		});
@@ -89,20 +89,24 @@ public class Menu extends JPanel {
 		this.add(quitButton);
 	}
 
-	public void InitializeLevel(){
+	public void showButtons(){
+		inventory.showInvButton();
+		menuPause.showPauseButton();
+	}
+
+	public void initializeLevel(){
 		this.player = new Player(data);
 		this.inventory = new Inventory(data);
 		this.map = new Map(data, fileMap, inventory);
 		this.menuPause = new MenuPause(data);
 
-		player.InitializePlayer(0, 0);
-		map.InitializeMap();
-		inventory.InitializeInventory(map.listObj, fileMap);
-		menuPause.InitializeMenuPause(this, inventory);
+		player.initializePlayer(0, 0);
+		map.initializeMap();
+		inventory.initializeInventory(map.listObj, fileMap);
+		menuPause.initializeMenuPause(this, inventory);
 		map.printMap();
 
-		inventory.showInvButton();
-		menuPause.showPauseButton();
+		showButtons();
 	}
 
 	public void displayMenu(){

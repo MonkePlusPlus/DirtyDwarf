@@ -13,6 +13,7 @@ public class Item extends Object {
 		this.name = name;
 		this.symb = symb;
 		this.time = time;
+		this.price = price;
 		this.image = image;
 	}
 

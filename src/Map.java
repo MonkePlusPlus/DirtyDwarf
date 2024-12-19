@@ -13,6 +13,7 @@ public class Map {
 	private Data data;
 	private Game game;
 	private Inventory inventory;
+	private Shop shop;
 
 	private File fileMap;
 	private String[][] stringMap;
@@ -49,7 +50,7 @@ public class Map {
 		this.fileMap = file;
 	}
 
-	public boolean InitializeMap(){
+	public boolean initializeMap(){
 		try {
 			tiles = ImageIO.read(new File("asset/tiles.png"));
 		} catch (IOException e) {
@@ -59,18 +60,18 @@ public class Map {
 		floorImg = tiles.getSubimage(0, sizeTile * blockIndex, sizeTile, sizeTile);
 		startImg = tiles.getSubimage(sizeTile * 2, 0, sizeTile, sizeTile);
 		shopImg = tiles.getSubimage(sizeTile * 5, 0, sizeTile, sizeTile);
-		System.out.println("Initialing map");
-		InitializeStringMap();
-		InitializeItem();
-		InitializeBlockMap();
-		InitializePos();
+		System.out.println("initialing map");
+		initializeStringMap();
+		initializeItem();
+		initializeBlockMap();
+		initializePos();
 		return true;
 	}
 
-	public void InitializePos(){
+	public void initializePos(){
 		for (int i = 0; i < lenY; i++){
 			for (Block b : blockMap[i]){
-				b.InitializePos(startPosX, startPosY);
+				b.initializePos(startPosX, startPosY);
 			}
 		}
 	}
@@ -82,7 +83,14 @@ public class Map {
 		return outputImage;
 	}
 	
-	public boolean InitializeBlockMap(){
+	public void createShop(){
+		inventory.getShop(shop);
+		shop.initialiseObjShop(listObj);
+		shop.initialiseShop();
+		shop.initialiseShopButton();
+	}
+
+	public boolean initializeBlockMap(){
 		blockMap = new Block[lenY][lenX];
 		System.out.println("x : " + lenX + " y : " + lenY);
 		for (int i = 0; i < lenY; i++){
@@ -98,7 +106,9 @@ public class Map {
 				} else if (stringMap[i][j].equals("N")) {
 					blockMap[i][j] = new Block(data, j, i, true, null);
 				} else if (stringMap[i][j].equals("M")) {
-					blockMap[i][j] = new Shop(data, j, i, true, shopImg);
+					blockMap[i][j] = new Shop(data, j, i, true, shopImg, inventory);
+					shop = (Shop)blockMap[i][j];
+					createShop();
 				} else {
 					int index = 0;
 					for (Object o : listObj[0]){
@@ -118,7 +128,7 @@ public class Map {
 		return true;
 	}
 
-	public boolean InitializeStringMap(){
+	public boolean initializeStringMap(){
 		Scanner scan;
 		String line;
 		String[] tabLine;
@@ -152,7 +162,7 @@ public class Map {
 		return true;
 	}
 
-	public boolean InitializeItem(){
+	public boolean initializeItem(){
 		Scanner scan;
 		String line;
 		String[] tabItem;
@@ -219,6 +229,13 @@ public class Map {
 	}
 
 	public void update(){
+		if (data.key.pause){
+			shop.removeShopButton();
+			shop.removeShop();
+		}
+		else {
+			shop.showShopButton();
+		}
 		if (data.key.up){
 			moveUp();
 			if (checkCollision() == false)

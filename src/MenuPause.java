@@ -49,7 +49,7 @@ public class MenuPause extends JPanel {
 		data.panel.add(pausButton);
 	}
 
-	public void InitializeMenuPause(Menu menu, Inventory inventory){
+	public void initializeMenuPause(Menu menu, Inventory inventory){
 		this.menu = menu;
 		this.inventory = inventory;
 
@@ -101,8 +101,10 @@ public class MenuPause extends JPanel {
 
 	public void displayMenuPause(){
 		data.key.pause = true;
+
 		inventory.removeInvButton();
 		inventory.removeInventory();
+		
 		data.panel.remove(pausButton);
 		data.panel.add(this);
 

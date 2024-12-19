@@ -22,8 +22,8 @@ public class Game extends JPanel {
 		menu.update();
 	}
 
-	public void InitializeGame(){
-		menu.InitialiseMenu();
+	public void initializeGame(){
+		menu.initialiseMenu();
 		menu.displayMenu();
 	}
 

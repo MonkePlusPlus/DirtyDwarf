@@ -3,13 +3,13 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 public class Block {
-	private Data data;
-	private boolean collision;
-	private BufferedImage image;
-	private int x;
-	private int y;
-	private int posY;
-	private int posX;
+	public Data data;
+	public boolean collision;
+	public BufferedImage image;
+	public int x;
+	public int y;
+	public int posY;
+	public int posX;
 
 	public Block(Data data, int x, int y, boolean col, BufferedImage image){
 		this.data = data;
@@ -36,7 +36,7 @@ public class Block {
 		}
 	}
 
-	public void InitializePos(int startX, int startY){
+	public void initializePos(int startX, int startY){
 		int centerX = data.width / 2 - (data.size / 2);
 		int centerY = data.height / 2 - (data.size / 2);
 		x = x - startX;

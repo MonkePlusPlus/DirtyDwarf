@@ -7,7 +7,7 @@ public class Run implements Runnable {
 
 	public Run(int width, int height) {
 		this.game = new Game(width, height);
-		this.game.InitializeGame();
+		this.game.initializeGame();
 	}
 
 	public void startGthread(){

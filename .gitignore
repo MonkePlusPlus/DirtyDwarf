@@ -5,4 +5,4 @@ bin
 .classpath
 .vscode
 .settings
-assset/*.kra
+asset/*.kra

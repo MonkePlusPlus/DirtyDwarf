@@ -74,6 +74,17 @@ public class Block extends Tile {
 		return collision;
 	}
 
+	public boolean isTouched(){
+		return (data.mouse.x <= getPosX() + data.size && 
+				data.mouse.x >= getPosX() &&
+				data.mouse.y <= getPosY() + data.size &&
+				data.mouse.y >= getPosY());
+	}
+
+	public boolean touchClose(){
+		return (data.mouse.click && isTouched() && getDistance() <= data.size * 2);
+	}
+
 	public double getDistance(){
 		int centerX = data.width / 2 - (data.size / 2);
 		int centerY = data.height / 2 - (data.size / 2);
@@ -86,6 +97,8 @@ public class Block extends Tile {
 
 	@Override
 	public void mouseClick(){
-		
+		if (data.mouse.click == true && isTouched()){
+			System.out.println("Block " + x + ":" + y + " is touched");
+		}
 	}
 }

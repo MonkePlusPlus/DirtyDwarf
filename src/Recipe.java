@@ -9,7 +9,7 @@ public class Recipe extends Item {
 	public int nbIngredient;
 
 	public Recipe(String name, String ingredient, String symb, int time, int price, BufferedImage image){
-		super(name, symb, time, price, image);
+		super(name, symb, time, price, image, true);
 		this.ingredient = ingredient;
 	}
 

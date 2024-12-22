@@ -19,9 +19,9 @@ public class Mouse extends MouseAdapter {
 
 	@Override 
 	public void mousePressed(MouseEvent mouse) {
+		click = true;
 		x = mouse.getX();
 		y = mouse.getY();
-		click = true;
 		System.out.println("Mouse click : " + "x = " + x + " y = " + y);
 	}
 

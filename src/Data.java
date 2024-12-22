@@ -12,8 +12,10 @@ public class Data {
 	public JPanel panel;
 	public JFrame window;
 	public Mouse mouse;
+	public Thread thread;
+	public boolean windowOpen;
 
-	public Data(int w, int h, int size, int speed, KeyHandler k, JFrame window, JPanel panel, Mouse mouse){
+	public Data(int w, int h, int size, int speed, KeyHandler k, JFrame window, JPanel panel, Mouse mouse, Thread thread){
 		this.height = h;
 		this.width = w;
 		this.size = size;
@@ -22,5 +24,6 @@ public class Data {
 		this.panel = panel;
 		this.window = window;
 		this.mouse = mouse;
+		this.thread = thread;
 	}
 }

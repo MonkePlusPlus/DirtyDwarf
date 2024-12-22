@@ -23,6 +23,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -63,6 +64,8 @@ public class Shop extends Block {
 	Color myColor = new Color(255, 255, 255, 150);
 	Color transparent = new Color(0, 0, 0, 0);
 
+	private Timer timerClick;
+
 	public Shop(Data data, int x, int y, boolean col, BufferedImage image, Inventory inventory){
 		super(data, x, y, col, image);
 		this.sellingObj = new LinkedList<Object>();
@@ -79,6 +82,13 @@ public class Shop extends Block {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		this.timerClick = new Timer(1000, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent evt) {
+				// wait
+			}
+		});
+		timerClick.setRepeats(false);
 	}
 
 	@Override
@@ -296,7 +306,8 @@ public class Shop extends Block {
 	}
 
 	public JPanel createObjDesc(Slot s){
-		int price = (80 * s.obj.price) / 100;
+		Item item = (Item)s.obj;
+		int price = (80 * item.price) / 100;
 		int descWidth = width / 3;
 		int descHeight = height - textSize * 3;
 		System.out.println("width = " + descWidth + " height = " + descHeight);
@@ -307,11 +318,11 @@ public class Shop extends Block {
 		panel.setBounds(0, 0, descWidth, descHeight);
 		panel.setFocusable(false);
 
-		JLabel image = new JLabel(new ImageIcon(new ImageIcon(s.obj.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
+		JLabel image = new JLabel(new ImageIcon(new ImageIcon(item.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
 		image.setBounds(descWidth / 2 - data.size, 0, data.size * 2, data.size * 2);
 		image.setBackground(Color.WHITE);
 
-		JTextArea text = new JTextArea(s.obj.name);
+		JTextArea text = new JTextArea(item.name);
 		text.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
 		text.setBackground(transparent);
 		text.setFocusable(false);
@@ -375,7 +386,8 @@ public class Shop extends Block {
 		for (Slot s : inventory.getInventory()){
 			JPanel objDesc = createObjDesc(s);
 
-			JButton button = new JButton(new ImageIcon(new ImageIcon(s.obj.image).getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT)));
+			Item item = (Item)s.obj;
+			JButton button = new JButton(new ImageIcon(new ImageIcon(item.image).getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT)));
 			button.setBounds(size * col + space * (col + 1),
 							 row * size + (row + 1) * space, 
 							 size, size);
@@ -482,10 +494,12 @@ public class Shop extends Block {
 			inventory.removeInventory();
 			updateShop();
 			data.panel.add(mainPane);
+			data.windowOpen = true;
 			shopOpen = true;
 		}
 		else {
 			data.panel.remove(mainPane);
+			data.windowOpen = false;
 			shopOpen = false;
 		}
 		data.panel.revalidate();
@@ -495,6 +509,7 @@ public class Shop extends Block {
 	public void removeShop() {
 		if (shopOpen) {
 			data.panel.remove(mainPane);
+			data.windowOpen = false;
 			data.panel.revalidate();
 			data.panel.requestFocusInWindow();
 			shopOpen = false;
@@ -507,19 +522,9 @@ public class Shop extends Block {
 
 	@Override
 	public void mouseClick(){
-		if (data.mouse.click){
-			if (data.mouse.x <= getPosX() + data.size && 
-					data.mouse.x >= getPosX() &&
-					data.mouse.y <= getPosY() + data.size &&
-					data.mouse.y >= getPosY()
-			){
-				drawShop();
-				try {
-					wait(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+		if (touchClose() && timerClick.isRunning() == false){
+			timerClick.restart();
+			drawShop();
 		}
 	}
 }

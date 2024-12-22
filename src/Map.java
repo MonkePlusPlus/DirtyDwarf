@@ -118,8 +118,10 @@ public class Map {
 					for (Object o : listObj[0]){
 						Item item = (Item)o;
 						if (stringMap[i][j].equals(item.getSymb())){
-							tileMap[i][j] = new Ressource(item, data, j, i, true, 
+							tileMap[i][j] = new Ressource(item, inventory, data, j, i, true,
 											tiles.getSubimage(sizeTile * index, sizeTile * ressourceIndex, sizeTile, sizeTile));
+							Ressource r = (Ressource)tileMap[i][j];
+							r.initialiseRessource();
 							break ;
 						}
 						index++;
@@ -192,7 +194,8 @@ public class Map {
 			for (String s : tabItem){
 				tab = s.split("_");
 				listObj[0].add(new Item(tab[0], tab[1], Integer.parseInt(tab[2]), Integer.parseInt(tab[3]),
-								tiles.getSubimage(sizeTile * i, sizeTile * itemIndex, sizeTile, sizeTile)));
+								tiles.getSubimage(sizeTile * i, sizeTile * itemIndex, sizeTile, sizeTile),
+								(Integer.parseInt(tab[4]) == 1)));
 				i++;
 			}
 			i = 0;
@@ -285,22 +288,23 @@ public class Map {
 		else {
 			shop.showShopButton();
 		}
-		if (data.key.up){
+
+		if (data.key.up && data.key.move){
 			moveUp();
 			if (checkCollision() == false)
 				moveDown();
 		}
-		if (data.key.down){
+		if (data.key.down && data.key.move){
 			moveDown();
 			if (checkCollision() == false)
 				moveUp();
 		}
-		if (data.key.left){
+		if (data.key.left && data.key.move){
 			moveLeft();
 			if (checkCollision() == false)
 				moveRight();
 		}
-		if (data.key.right){
+		if (data.key.right && data.key.move){
 			moveRight();
 			if (checkCollision() == false)
 				moveLeft();

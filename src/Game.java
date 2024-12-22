@@ -8,11 +8,11 @@ public class Game extends JPanel {
 	private Menu menu;
 	private Mouse mouse;
 	
-	public Game(int width, int height, JFrame window) {
+	public Game(int width, int height, JFrame window, Thread thread) {
 		super();
 		this.window = window;
 		this.mouse = new Mouse();
-		this.data = new Data(width, height, (int)((width + height) / 62.5), 4 * (width / 1920), new KeyHandler(), window, this, mouse);
+		this.data = new Data(width, height, (int)((width + height) / 62.5), 4 * (width / 1920), new KeyHandler(), window, this, mouse, thread);
 		mouse.data = data;
 		this.menu = new Menu(data);
 		setPreferredSize(new Dimension(width, height));

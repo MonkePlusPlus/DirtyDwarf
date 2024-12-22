@@ -1,9 +1,9 @@
 
 public class Slot {
-	public Item obj;
+	public Object obj;
 	public int nb;
 
-	public Slot(Item obj, int nb){
+	public Slot(Object obj, int nb){
 		this.obj = obj;
 		this.nb = nb;
 	}

@@ -91,6 +91,8 @@ public class Inventory extends JTabbedPane {
 	}
 
 	public JPanel createDesCard(Slot s){
+		Item item = (Item)s.obj;
+
 		JPanel panel = new JPanel();
 		panel.setBackground(myColor);
 		panel.setLayout(null);
@@ -99,11 +101,11 @@ public class Inventory extends JTabbedPane {
 		panel.setBounds(0, 0, descWidth, descHeight);
 		panel.setFocusable(false);
 
-		JLabel image = new JLabel(new ImageIcon(new ImageIcon(s.obj.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
+		JLabel image = new JLabel(new ImageIcon(new ImageIcon(item.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
 		image.setBounds(descWidth / 2 - data.size, 0, data.size * 2, data.size * 2);
 		image.setBackground(Color.WHITE);
 
-		JTextArea text = new JTextArea(s.obj.name + " x" + s.nb);
+		JTextArea text = new JTextArea(item.name + " x" + s.nb);
 		text.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
 		text.setBackground(transparent);
 		text.setFocusable(false);
@@ -112,7 +114,7 @@ public class Inventory extends JTabbedPane {
 		int[] tsize = getTextSize(text);
 		text.setBounds(descWidth / 2 - tsize[0] / 2, data.size * 2 + data.size / 2, tsize[0], tsize[1]);
 
-		JTextArea description = new JTextArea("Time to make : " + s.obj.time + "s");
+		JTextArea description = new JTextArea("Time to make : " + item.time + "s");
 		description.setBounds(descWidth / 10, data.size * 4, descWidth / 2, descHeight / 10);
 		description.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
 		description.setBackground(transparent);
@@ -150,7 +152,8 @@ public class Inventory extends JTabbedPane {
 		for (Slot s : items){
 			JPanel desc = createDesCard(s);
 
-			JButton button = new JButton(new ImageIcon(new ImageIcon(s.obj.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
+			Item item = (Item)s.obj;
+			JButton button = new JButton(new ImageIcon(new ImageIcon(item.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
 			button.setBounds(data.size * 2 * i + spaceBetween * (i + 1), j * data.size * 2 + (j + 1) * spaceBetween, data.size * 2, data.size * 2);
 			button.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e){
@@ -265,7 +268,8 @@ public class Inventory extends JTabbedPane {
 
 			String t = r.name + " = ";
 			for (int j = 0; j < r.nbIngredient; j++){
-				String textItem = r.ingredients[j].obj.name + " x " + r.ingredients[j].nb;
+				Item item = (Item)r.ingredients[j].obj;
+				String textItem = item.name + " x " + r.ingredients[j].nb;
 				t += (j == r.nbIngredient - 1) ? textItem : textItem + " + ";
 			} 
 
@@ -307,7 +311,9 @@ public class Inventory extends JTabbedPane {
 
 		for (Slot s : r.ingredients){
 			for (Slot item : items){
-				if (s.obj.name.equals(item.obj.name)){
+				Item item1 = (Item)s.obj;
+				Item item2 = (Item)item.obj;
+				if (item1.name.equals(item2.name)){
 					if (s.nb <= item.nb){
 						did++;
 					}
@@ -424,6 +430,7 @@ public class Inventory extends JTabbedPane {
 		if (invOpen == true){
 			data.panel.remove(this);
 			invOpen = false;
+			data.windowOpen = false;
 			data.panel.revalidate();
 			data.panel.requestFocusInWindow();
 		}
@@ -434,34 +441,39 @@ public class Inventory extends JTabbedPane {
 			shop.removeShop();
 			updateInventory();
 			data.panel.add(this);
+			data.windowOpen = true;
 			invOpen = true;
 		}
 		else {
 			descPane.removeAll();
 			data.panel.remove(this);
+			data.windowOpen = false;
 			invOpen = false;
 		}
 		data.panel.revalidate();
 		data.panel.requestFocusInWindow();
 	}
 
-	public void addObj(Item obj, int nb){
+	public void addObj(Object obj, int nb){
 		for (int i = 0; i < items.size(); i++) {
 			if (items.get(i).obj.equals(obj)){
 				items.get(i).nb += nb;
+				updateInventory();
 				return ;
 			}
 		}
 		items.add(new Slot(obj, nb));
+		updateInventory();
 	}
 
-	public boolean deleteObj(Item obj, int nb){
+	public boolean deleteObj(Object obj, int nb){
 		for (int i = 0; i < items.size(); i++) {
 			if (items.get(i).obj.equals(obj)){
 				if (items.get(i).nb >= nb){
 					items.get(i).nb -= nb;
 					if (items.get(i).nb == 0){
 						items.remove(i);
+						updateInventory();
 					}
 				} else {
 					return false;

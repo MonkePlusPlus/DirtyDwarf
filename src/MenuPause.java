@@ -80,6 +80,7 @@ public class MenuPause extends JPanel {
 				data.panel.add(pausButton);
 				inventory.showInvButton();
 				data.key.pause = false;
+				data.windowOpen = false;
 				data.panel.revalidate();
 				data.panel.requestFocusInWindow();
 			}
@@ -101,6 +102,7 @@ public class MenuPause extends JPanel {
 
 	public void displayMenuPause(){
 		data.key.pause = true;
+		data.windowOpen = true;
 
 		inventory.removeInvButton();
 		inventory.removeInventory();

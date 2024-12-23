@@ -1,7 +1,9 @@
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,11 +11,13 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
+import javax.swing.JPanel;
 
-public class Map {
+public class Map extends JPanel {
 	
 	private Data data;
 	private Game game;
+	private Player player;
 	private Inventory inventory;
 	private Shop shop;
 
@@ -44,12 +48,27 @@ public class Map {
 	private BufferedImage tiles;
 	private int sizeTile = 48;
 
-	public Map(Data data, File file, Inventory inventory){
+	public Map(Data data, File file, Inventory inventory, Player player){
+		super();
 		this.data = data;
 		this.inventory = inventory;
+		this.player = player;
 		this.centerX = data.width / 2 - (data.size / 2);
 		this.centerY = data.height / 2 - (data.size / 2);
 		this.fileMap = file;
+
+		this.setBounds(0, 0, data.width, data.height);
+		this.setBackground(Color.BLACK);
+		this.setDoubleBuffered(true);
+		this.addKeyListener(data.key);
+		this.setLayout(null);
+		this.setFocusable(true);
+
+		data.panel.add(this);
+		data.panel.setLayer(this, 0);
+
+		data.panel.add(data.menuPanel);
+		data.panel.setLayer(data.menuPanel, 2);
 	}
 
 	public boolean initializeMap(){
@@ -67,7 +86,6 @@ public class Map {
 		initializeItem();
 		initializeTileMap();
 		initializePos();
-
 		return true;
 	}
 
@@ -110,7 +128,7 @@ public class Map {
 				} else if (stringMap[i][j].equals("N")) {
 					tileMap[i][j] = new Block(data, j, i, true, null);
 				} else if (stringMap[i][j].equals("M")) {
-					tileMap[i][j] = new Shop(data, j, i, true, shopImg, inventory);
+					tileMap[i][j] = new Shop(data, j, i, true, shopImg, inventory, this);
 					shop = (Shop)tileMap[i][j];
 					createShop();
 				} else {
@@ -216,6 +234,15 @@ public class Map {
 		return true;
 	}
 
+	@Override
+	public void paintComponent(Graphics g){
+		Toolkit.getDefaultToolkit().sync();
+		super.paintComponent(g);
+
+		Graphics2D g2 = (Graphics2D)g;
+		drawMap(g2);
+	}
+
 	public void drawMap(Graphics2D g){
 		for (int i = 0; i < lenY; i++){
 			if (tileMap == null){
@@ -231,14 +258,17 @@ public class Map {
 					System.out.println("failed to load in block[i] : " + i);
 				} else {
 					b.drawBlock(g);
-					b.mouseClick();
+					if (data.key.editMode == false){
+						b.mouseClick();
+					}
 				}
 			}
 		}
 		Rectangle r = getPosMouse();
-		if (!windowOpen()){
+		if (!windowOpen() && data.windowOpen == false && data.key.pause == false){
 			data.mouse.drawSelect(g, r, getColorMouse(r));
 		}
+		player.draw(g);
 	}
 
 	public boolean windowOpen(){
@@ -273,22 +303,46 @@ public class Map {
 
 		double distance = Math.sqrt(Math.pow(Math.abs(centerX - (r.getX() + data.size / 2)), 2)
 						+ Math.pow(Math.abs(centerY - (r.getY() + data.size / 2)), 2));
-
-		switch (tileMap[y][x].getType()){
-			case WALL : case FLOOR : return Color.WHITE;
-			default: return ((distance <= data.size * 3) ? Color.GREEN : Color.RED);
+	
+		if (data.key.editMode && data.key.type == 0){
+			if (tileMap[y][x].collision || ((Block)tileMap[y][x]).touchPlayer()){
+				return Color.RED;
+			} else {
+				return Color.GREEN;
+			}
 		}
+		if (data.key.editMode && data.key.type == 1) {
+			if (tileMap[y][x].collision || ((Block)tileMap[y][x]).touchPlayer()){
+				return Color.RED;
+			} else if (y > 0 && tileMap[y - 1][x].getType() == Tile.TileType.RESSOURCE){
+				return Color.GREEN;
+			} else if (y < lenY && tileMap[y + 1][x].getType() == Tile.TileType.RESSOURCE){
+				return Color.GREEN;
+			} else if (x > 0 && tileMap[y][x - 1].getType() == Tile.TileType.RESSOURCE){
+				return Color.GREEN;
+			} else if (x < lenX && tileMap[y][x + 1].getType() == Tile.TileType.RESSOURCE) {
+				return Color.GREEN;
+			} else {
+				return Color.WHITE;
+			}
+		}
+        return switch (tileMap[y][x].getType()) {
+                case WALL, FLOOR -> Color.WHITE;
+                default -> (distance <= data.size * 3) ? Color.GREEN : Color.RED;
+        };
 	}
 
 	public void update(){
-		if (data.key.pause){
+		if (data.key.pause || data.key.editMode){
 			shop.removeShopButton();
 			shop.removeShop();
+			inventory.removeInventory();
+			inventory.removeInvButton();
 		}
 		else {
+			inventory.showInvButton();
 			shop.showShopButton();
 		}
-
 		if (data.key.up && data.key.move){
 			moveUp();
 			if (checkCollision() == false)
@@ -372,10 +426,7 @@ public class Map {
 			for (Tile t : tileMap[i]){
 				Block b = (Block)t;
 				if (b.getCollission() == true) {
-					if (b.getPosY() > data.height / 2 - (data.size / 2) - data.size &&
-						b.getPosY() < data.height / 2 + (data.size / 2) &&
-						b.getPosX() > data.width / 2 - (data.size / 2) - data.size &&
-						b.getPosX() < data.width / 2 + (data.size / 2)){
+					if (b.touchPlayer()){
 						return false;
 					}
 				}
@@ -384,71 +435,61 @@ public class Map {
 		return true;
 	}
 
-	/* 
-	public boolean collisionUp(){
-		for (int i = 0; i < lenX; i++){
-			for (Block b : tileMap[i]){
-				if (b.getCollission() == true) {
-					if (b.getPosY() + 48 < height / 2 - (sizeTile / 2) &&
-						b.getPosY() + 48 + speed >= height / 2 - (sizeTile / 2) &&
-						b.getPosX() > width / 2 - (sizeTile / 2) - 48 &&
-						b.getPosX() < width / 2 + (sizeTile / 2)){
-							return false;
+	public int nextToRessource(){
+		for (int y = 0; y < lenY; y++){
+			for (int x = 0; x < lenX; x++){
+				if (tileMap[y][x].isTouched()){
+					if (tileMap[y][x].collision || tileMap[y][x].getType() == Tile.TileType.EXIT
+						|| ((Block)tileMap[y][x]).touchPlayer()){
+						return 0;
+					}
+					if (y > 0 && tileMap[y - 1][x].getType() == Tile.TileType.RESSOURCE){
+						return 1;
+					} else if (y < lenY && tileMap[y + 1][x].getType() == Tile.TileType.RESSOURCE) {
+						return 2;
+					} else if (x > 0 && tileMap[y][x - 1].getType() == Tile.TileType.RESSOURCE){
+						return 3;
+					} else if (x < lenX && tileMap[y][x + 1].getType() == Tile.TileType.RESSOURCE){
+						return 4;
 					}
 				}
 			}
 		}
-		return true;
+		return 0;
 	}
 
-	public boolean collisionDown(){
-		for (int i = 0; i < lenX; i++){
-			for (Block b : tileMap[i]){
-				if (b.getCollission() == true) {
-					if (b.getPosY() - 48 > height / 2 - (sizeTile / 2) &&
-						b.getPosY() - 48 - speed <= height / 2 - (sizeTile / 2) &&
-						b.getPosX() > width / 2 - (sizeTile / 2) - 48 &&
-						b.getPosX() < width / 2 + (sizeTile / 2)){
-							return false;
+	public boolean cantPut(){
+		for (int y = 0; y < lenY; y++){
+			for (int x = 0; x < lenX; x++){
+				if (tileMap[y][x].isTouched()){
+					if (tileMap[y][x].collision || tileMap[y][x].getType() == Tile.TileType.EXIT
+						|| ((Block)tileMap[y][x]).touchPlayer()){
+						return true;
 					}
 				}
 			}
 		}
-		return true;	
+		return false;
 	}
 
-
-	public boolean collisionLeft(){
-		for (int i = 0; i < lenX; i++){
-			for (Block b : tileMap[i]){
-				if (b.getCollission() == true) {
-					if (b.getPosY() > height / 2 - (sizeTile / 2) - 48 &&
-						b.getPosY() < height / 2 + (sizeTile / 2) &&
-						b.getPosX() + 48 < width / 2 - (sizeTile / 2) &&
-						b.getPosX() + 48 + speed >= width / 2 - (sizeTile / 2)){
-							return false;
-					}
+	public int[] getIndexTouched(){
+		int[] index = new int[2];
+		
+		for (int y = 0; y < lenY; y++){
+			for (int x = 0; x < lenX; x++){
+				if (tileMap[y][x].isTouched()){
+					index[0] = y;
+					index[1] = x;
+					return index;
 				}
 			}
 		}
-		return true;
+		return null;
 	}
 
-
-	public boolean collisionRight(){
-		for (int i = 0; i < lenX; i++){
-			for (Block b : tileMap[i]){
-				if (b.getCollission() == true) {
-					if (b.getPosY() > height / 2 - (sizeTile / 2) - 48 &&
-						b.getPosY() < height / 2 + (sizeTile / 2) &&
-						b.getPosX() > width / 2 + (sizeTile / 2) &&
-						b.getPosX() - speed <= width / 2 + (sizeTile / 2)){
-							return false;
-					}
-				}
-			}
-		}
-		return true;	
+	public void setTile(Tile tile, int x, int y){
+		tile.posX = tileMap[y][x].posX;
+		tile.posY = tileMap[y][x].posY;
+		tileMap[y][x] = tile;
 	}
-		*/
 }

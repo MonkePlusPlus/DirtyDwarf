@@ -31,6 +31,7 @@ import javax.swing.event.ChangeListener;
 public class Shop extends Block {
 
 	private LinkedList<Object> sellingObj;
+	private Map map;
 	private Inventory inventory;
 
 	private JTabbedPane mainPane;
@@ -61,15 +62,20 @@ public class Shop extends Block {
 	private JButton shopButton;
 	private boolean shopOpen;
 
+	private BufferedImage collecterImage;
+	private BufferedImage crafterImage;
+
 	Color myColor = new Color(255, 255, 255, 150);
 	Color transparent = new Color(0, 0, 0, 0);
 
 	private Timer timerClick;
+	private int sizeTile = 48;
 
-	public Shop(Data data, int x, int y, boolean col, BufferedImage image, Inventory inventory){
+	public Shop(Data data, int x, int y, boolean col, BufferedImage image, Inventory inventory, Map map){
 		super(data, x, y, col, image);
 		this.sellingObj = new LinkedList<Object>();
 		this.inventory = inventory;
+		this.map = map;
 		this.posX = data.width / 10;
 		this.posY = data.height / 10;
 		this.width = (int)(data.width / 1.25);
@@ -79,6 +85,8 @@ public class Shop extends Block {
 		this.shopOpen = false;
 		try {
 			shopKepper = ImageIO.read(new File("asset/shop.png"));
+			collecterImage = ImageIO.read(new File("asset/tiles.png")).getSubimage(sizeTile * 3, 0, sizeTile, sizeTile);
+			crafterImage = ImageIO.read(new File("asset/tiles.png")).getSubimage(sizeTile * 4, 0, sizeTile, sizeTile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -106,6 +114,9 @@ public class Shop extends Block {
 				}
 			}
 		}
+		sellingObj.add(new Machine(data, TileType.COLLECTER , null, collecterImage, inventory, map, this));
+		sellingObj.add(new Machine(data, TileType.CRAFTER , Crafter.CrafterType.NORMAL, crafterImage, inventory, map, this));
+		sellingObj.add(new Machine(data, TileType.CRAFTER , Crafter.CrafterType.POLYVALENT, crafterImage, inventory, map, this));
 	}
 
 	public void initialiseShop(){
@@ -128,6 +139,7 @@ public class Shop extends Block {
 		mainPane.setBounds(posX, posY, width, height);
 		mainPane.setBackground(myColor);
 		mainPane.addKeyListener(data.key);
+		mainPane.setFocusable(false);
 		UIManager.put("TabbedPane.contentOpaque", false);
 		UIManager.put("TabbedPane.selected", Color.RED);
 		UIManager.put("TabbedPane.background", Color.RED);
@@ -146,7 +158,6 @@ public class Shop extends Block {
 				}
 			}
 		});
-
 		initializeTab();
 	}
 
@@ -156,7 +167,7 @@ public class Shop extends Block {
 		buyText.setFont(new Font("Squealer Embossed", Font.BOLD, 100 * data.size / 48));
 		buyText.setFocusable(false);
 
-		int[] sizeText = getTextSize(buyText);
+		int[] sizeText = data.getTextSize(buyText);
 		buyText.setBounds(width / 2 - sizeText[0] / 2, 0, sizeText[0], sizeText[1]);
 
 		buyPane = new JPanel();
@@ -185,11 +196,11 @@ public class Shop extends Block {
 
 	public JLayeredPane createBuyObjPane(){
 		JLayeredPane pane = new JLayeredPane();
-		JLabel imageLabel;
 		int row = 0;
 		int col = 0;
-		int size = data.size * 2;
 		int bindex = 0;
+		JLabel imageLabel;
+		int size = data.size * 2;
 
 		buyButton = new JButton[sellingObj.size()];
 		pane.setLayout(null);
@@ -197,14 +208,14 @@ public class Shop extends Block {
 		pane.setFocusable(true);
 		pane.setPreferredSize(new Dimension(width - width / 10, (size + spaceBetween + height / 20) * sellingObj.size() / 8));
 		for (Object obj : sellingObj) {
-			Item item = (Item)obj;
-			imageLabel = new JLabel(new ImageIcon(new ImageIcon(item.image).getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT)));
+
+			imageLabel = new JLabel(new ImageIcon(new ImageIcon(obj.image).getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT)));
 			imageLabel.setBounds(col * size + (col + 1) * spaceBetween, row * size + row * (2 * spaceBetween), size, size);
 			imageLabel.setBackground(Color.WHITE);
 			imageLabel.setVisible(true);
 
-			System.out.println(item.name + " : " + item.price);
-			buyButton[bindex] = new JButton(item.price + "$");
+			System.out.println(obj.name + " : " + obj.price);
+			buyButton[bindex] = new JButton(obj.price + "$");
 			buyButton[bindex].setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
 			buyButton[bindex].setFocusable(false);
 			buyButton[bindex].setBackground(Color.YELLOW);
@@ -215,8 +226,8 @@ public class Shop extends Block {
 
 			buyButton[bindex].addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e){
-					inventory.addObj(item, 1);
-					inventory.money -= item.price;
+					inventory.addObj(obj, 1);
+					inventory.money -= obj.price;
 					updateShop();
 				}
 			});
@@ -240,7 +251,7 @@ public class Shop extends Block {
 		int i = 0;
 
 		for (JButton b : buyButton){
-			if (inventory.money >= ((Item)sellingObj.get(i)).price){
+			if (inventory.money >= sellingObj.get(i).price){
 				b.setBorder(BorderFactory.createLineBorder(Color.GREEN, 4 * data.width / 1920));
 				b.setEnabled(true);
 			} else {
@@ -257,7 +268,7 @@ public class Shop extends Block {
 		sellText.setFont(new Font("Squealer Embossed", Font.BOLD, 100 * data.size / 48));
 		sellText.setFocusable(false);
 
-		int[] sizeText = getTextSize(sellText);
+		int[] sizeText = data.getTextSize(sellText);
 		sellText.setBounds(width / 2 - sizeText[0] / 2, 0, sizeText[0], sizeText[1]);
 
 		sellPane = new JPanel();
@@ -306,8 +317,8 @@ public class Shop extends Block {
 	}
 
 	public JPanel createObjDesc(Slot s){
-		Item item = (Item)s.obj;
-		int price = (80 * item.price) / 100;
+
+		int price = (80 * s.obj.price) / 100;
 		int descWidth = width / 3;
 		int descHeight = height - textSize * 3;
 		System.out.println("width = " + descWidth + " height = " + descHeight);
@@ -318,17 +329,17 @@ public class Shop extends Block {
 		panel.setBounds(0, 0, descWidth, descHeight);
 		panel.setFocusable(false);
 
-		JLabel image = new JLabel(new ImageIcon(new ImageIcon(item.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
+		JLabel image = new JLabel(new ImageIcon(new ImageIcon(s.obj.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
 		image.setBounds(descWidth / 2 - data.size, 0, data.size * 2, data.size * 2);
 		image.setBackground(Color.WHITE);
 
-		JTextArea text = new JTextArea(item.name);
+		JTextArea text = new JTextArea(s.obj.name);
 		text.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
 		text.setBackground(transparent);
 		text.setFocusable(false);
 		text.setForeground(Color.BLACK);
 	
-		int [] textSize = getTextSize(text);
+		int [] textSize = data.getTextSize(text);
 		text.setBounds(descWidth / 2 - textSize[0] / 2, data.size * 2 + data.size / 2, textSize[0], textSize[1]);
 
 		String[] stringNb = new String[s.nb];
@@ -386,8 +397,7 @@ public class Shop extends Block {
 		for (Slot s : inventory.getInventory()){
 			JPanel objDesc = createObjDesc(s);
 
-			Item item = (Item)s.obj;
-			JButton button = new JButton(new ImageIcon(new ImageIcon(item.image).getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT)));
+			JButton button = new JButton(new ImageIcon(new ImageIcon(s.obj.image).getImage().getScaledInstance(size, size, Image.SCALE_DEFAULT)));
 			button.setBounds(size * col + space * (col + 1),
 							 row * size + (row + 1) * space, 
 							 size, size);
@@ -413,7 +423,7 @@ public class Shop extends Block {
 			text.setFocusable(false);
 			text.setForeground(Color.BLACK);
 
-			int[] textSize = getTextSize(text);
+			int[] textSize = data.getTextSize(text);
 			text.setBounds(size * (col + 1) + space * (col + 1), 
 						   row * size + (row + 1) * space,
 						   textSize[0], textSize[1]);
@@ -451,19 +461,10 @@ public class Shop extends Block {
 		moneyText.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
 	}
 
-	public int[] getTextSize(JTextArea text){
-		FontMetrics fontMetrics = text.getFontMetrics(text.getFont());
-
-		int[] i = new int[2];
-		i[0] = fontMetrics.charsWidth(text.getText().toCharArray(), 0, text.getText().length());
-		i[1] = fontMetrics.getHeight();
-		return (i);
-	}
-
 	public void updateMoney(){
 		moneyText.setText(inventory.money + "$");
 
-		int[] size = getTextSize(moneyText);
+		int[] size = data.getTextSize(moneyText);
 		moneyText.setBounds(width - width / 10 - size[0], height / 50, size[0], size[1]);
 	}
 
@@ -482,24 +483,26 @@ public class Shop extends Block {
 	}
 
 	public void showShopButton(){
-		data.panel.add(shopButton);
+		data.menuPanel.add(shopButton);
 	}
 
 	public void removeShopButton(){
-		data.panel.remove(shopButton);
+		data.menuPanel.remove(shopButton);
 	}
 
 	public void drawShop(){
 		if (shopOpen == false){
 			inventory.removeInventory();
 			updateShop();
-			data.panel.add(mainPane);
+			data.menuPanel.add(mainPane);
 			data.windowOpen = true;
+			data.key.move = false;
 			shopOpen = true;
 		}
 		else {
-			data.panel.remove(mainPane);
+			data.menuPanel.remove(mainPane);
 			data.windowOpen = false;
+			data.key.move = true;
 			shopOpen = false;
 		}
 		data.panel.revalidate();
@@ -508,21 +511,21 @@ public class Shop extends Block {
 
 	public void removeShop() {
 		if (shopOpen) {
-			data.panel.remove(mainPane);
+			data.menuPanel.remove(mainPane);
 			data.windowOpen = false;
-			data.panel.revalidate();
-			data.panel.requestFocusInWindow();
+			data.menuPanel.revalidate();
+			data.menuPanel.requestFocusInWindow();
 			shopOpen = false;
 		}
 	}
 
 	public boolean isOpen(){
-		return (data.panel.isAncestorOf(mainPane));
+		return (data.menuPanel.isAncestorOf(mainPane));
 	}
 
 	@Override
 	public void mouseClick(){
-		if (touchClose() && timerClick.isRunning() == false){
+		if (data.key.editMode == false && touchClose() && timerClick.isRunning() == false){
 			timerClick.restart();
 			drawShop();
 		}

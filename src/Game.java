@@ -1,7 +1,7 @@
 import java.awt.*;
 import javax.swing.*;
 
-public class Game extends JPanel {
+public class Game extends JLayeredPane {
 
 	private JFrame window;
 	private Data data;
@@ -21,6 +21,10 @@ public class Game extends JPanel {
 		addKeyListener(data.key);
 		setLayout(null);
 		setFocusable(true);
+
+		this.data.initialisePanel();
+		this.add(data.menuPanel);
+		this.setLayer(data.menuPanel, 1);
 	}
 
 	public void update(){
@@ -32,16 +36,16 @@ public class Game extends JPanel {
 		menu.displayMenu();
 	}
 
-	public void drawGame(Graphics2D g2){
-		menu.drawGame(g2);
+	public void drawGame(){
+		menu.drawGame();
 	}
 
-	@Override
-	public void paintComponent(Graphics g){
-		Toolkit.getDefaultToolkit().sync();
-		super.paintComponent(g);
+	//@Override
+	//public void paintComponent(Graphics g){
+	//	Toolkit.getDefaultToolkit().sync();
+	//	super.paintComponent(g);
 
-		Graphics2D g2 = (Graphics2D)g;
-		drawGame(g2);
-	}
+	//	Graphics2D g2 = (Graphics2D)g;
+	//	drawGame(g2);
+	//}
 }

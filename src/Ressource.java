@@ -41,7 +41,7 @@ public class Ressource extends Block {
 
 	@Override
 	public void mouseClick(){
-		if (touchClose() && isMaking == false) {
+		if (data.key.editMode == false && touchClose() && isMaking == false) {
 			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -53,6 +53,7 @@ public class Ressource extends Block {
 					long start = System.currentTimeMillis();
 					long t;
 					data.panel.add(progressBar);
+					data.panel.setLayer(progressBar, 1);
 					while ((t = ((System.currentTimeMillis() - start) / 1000)) < item.time){
 						progressBar.setValue((int)t);
 						if (isOut() || data.windowOpen || data.key.pause) {
@@ -62,6 +63,7 @@ public class Ressource extends Block {
 						} else {
 							if (data.panel.isAncestorOf(progressBar) == false){
 								data.panel.add(progressBar);
+								data.panel.setLayer(progressBar, 1);
 							}
 							progressBar.setLocation(getPosX(), getPosY() - height);
 						}

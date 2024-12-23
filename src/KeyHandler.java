@@ -8,6 +8,8 @@ public class KeyHandler implements KeyListener {
 	public boolean key_e = false;
 	public boolean pause = false;
 	public boolean move = true;
+	public boolean editMode;
+	public int type; // 0 crafter | 1 collecter
 
 	public boolean moneyP;
 	public boolean moneyM;
@@ -22,9 +24,13 @@ public class KeyHandler implements KeyListener {
 	public void keyPressed(KeyEvent e){
 		int code = e.getKeyCode();
 		
-		if (pause)
+		if (pause || move == false){
+			up = false;
+			down = false;
+			left = false;
+			right = false;
 			return ;
-
+		}
 		if (code == KeyEvent.VK_UP || code == KeyEvent.VK_Z){
 			up = true;
 		}
@@ -54,8 +60,8 @@ public class KeyHandler implements KeyListener {
 	public void keyReleased(KeyEvent e){
 		int code = e.getKeyCode();
 
-		if (pause)
-			return ;
+		//if (pause)
+		//	return ;
 
 		if (code == KeyEvent.VK_UP || code == KeyEvent.VK_Z){
 			up = false;

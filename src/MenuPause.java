@@ -19,10 +19,9 @@ public class MenuPause extends JPanel {
 	private JButton quitButton;
 
 	private Menu menu;
-	private Inventory inventory;
 
 	private JTextArea title;
-	Color myColor = new Color(0, 0, 0, 10);
+	Color myColor = new Color(0, 0, 0, 100);
 
 	public MenuPause(Data data){
 		super();
@@ -46,12 +45,11 @@ public class MenuPause extends JPanel {
 		pausButton.setFocusPainted(false);
 		pausButton.setVisible(true);
 
-		data.panel.add(pausButton);
+		data.menuPanel.add(pausButton);
 	}
 
-	public void initializeMenuPause(Menu menu, Inventory inventory){
+	public void initializeMenuPause(Menu menu){
 		this.menu = menu;
-		this.inventory = inventory;
 
 		title = new JTextArea("PAUSE");
 		title.setBounds(data.width / 3, data.height / 10, data.width, data.height / 5);
@@ -77,12 +75,12 @@ public class MenuPause extends JPanel {
 		contButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e){
 				removeMenuPause();
-				data.panel.add(pausButton);
-				inventory.showInvButton();
+				data.menuPanel.add(pausButton);
 				data.key.pause = false;
 				data.windowOpen = false;
-				data.panel.revalidate();
-				data.panel.requestFocusInWindow();
+				data.key.move = true;
+				data.menuPanel.revalidate();
+				data.menuPanel.requestFocusInWindow();
 			}
 		});
 
@@ -101,20 +99,20 @@ public class MenuPause extends JPanel {
 	}
 
 	public void displayMenuPause(){
+		data.key.editMode = false;
 		data.key.pause = true;
 		data.windowOpen = true;
 
-		inventory.removeInvButton();
-		inventory.removeInventory();
+		data.menuPanel.removeAll();
 		
-		data.panel.remove(pausButton);
-		data.panel.add(this);
+		data.menuPanel.remove(pausButton);
+		data.menuPanel.add(this);
 
-		data.panel.revalidate();
-		data.panel.requestFocusInWindow();
+		data.menuPanel.revalidate();
+		data.menuPanel.requestFocusInWindow();
 	}
 
 	public void removeMenuPause(){
-		data.panel.remove(this);
+		data.menuPanel.remove(this);
 	}
 }

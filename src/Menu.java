@@ -46,10 +46,9 @@ public class Menu extends JPanel {
 		}
 	}
 
-	public void drawGame(Graphics2D g){
+	public void drawGame(){
 		if (running){
-			map.drawMap(g);
-			player.draw(g);
+			map.repaint();
 		}
 	}
 
@@ -100,13 +99,13 @@ public class Menu extends JPanel {
 
 		this.player = new Player(data);
 		this.inventory = new Inventory(data);
-		this.map = new Map(data, fileMap, inventory);
+		this.map = new Map(data, fileMap, inventory, player);
 		this.menuPause = new MenuPause(data);
 
 		player.initializePlayer(0, 0);
 		map.initializeMap();
 		inventory.initializeInventory(map.listObj, fileMap);
-		menuPause.initializeMenuPause(this, inventory);
+		menuPause.initializeMenuPause(this);
 		map.printMap();
 
 		showButtons();

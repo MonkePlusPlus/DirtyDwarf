@@ -4,18 +4,12 @@ import java.awt.image.BufferedImage;
 
 public class Block extends Tile {
 	public Data data;
-	public boolean collision;
-	public BufferedImage image;
-	public int x;
-	public int y;
-	public int posY;
-	public int posX;
 
-	public Block(Data data, int x, int y, boolean col, BufferedImage image){
+	public Block(Data data, int x, int y, boolean collision, BufferedImage image){
 		this.data = data;
 		this.x = x;
 		this.y = y;
-		this.collision = col;
+		this.collision = collision;
 		this.image = image;
 		this.posX = x * data.size;
 		this.posY = y * data.size;
@@ -74,6 +68,13 @@ public class Block extends Tile {
 		return collision;
 	}
 
+	public boolean touchPlayer(){
+		return (posY > data.height / 2 - (data.size / 2) - data.size &&
+				posY < data.height / 2 + (data.size / 2) &&
+				posX > data.width / 2 - (data.size / 2) - data.size &&
+				posX < data.width / 2 + (data.size / 2));
+	}
+
 	public boolean isTouched(){
 		return (data.mouse.x <= getPosX() + data.size && 
 				data.mouse.x >= getPosX() &&
@@ -82,7 +83,7 @@ public class Block extends Tile {
 	}
 
 	public boolean touchClose(){
-		return (data.mouse.click && isTouched() && getDistance() <= data.size * 2);
+		return (data.mouse.leftClick && isTouched() && getDistance() <= data.size * 2);
 	}
 
 	public double getDistance(){
@@ -97,7 +98,7 @@ public class Block extends Tile {
 
 	@Override
 	public void mouseClick(){
-		if (data.mouse.click == true && isTouched()){
+		if (data.mouse.leftClick == true && isTouched()){
 			System.out.println("Block " + x + ":" + y + " is touched");
 		}
 	}

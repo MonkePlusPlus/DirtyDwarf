@@ -77,7 +77,8 @@ public class Inventory extends JTabbedPane {
 		this.textSize = height / 9;
 		this.setBounds(startX, startY, width, height);
 		this.setBackground(myColor);
-		this.addKeyListener(data.key);
+		//this.addKeyListener(data.key);
+		this.setFocusable(false);
 		UIManager.put("TabbedPane.contentOpaque", false);
 		UIManager.put("TabbedPane.selected", Color.RED);
 		UIManager.put("TabbedPane.background", Color.RED);
@@ -90,7 +91,7 @@ public class Inventory extends JTabbedPane {
 		updateInvPanel();
 	}
 
-	public JPanel createDesCard(Slot s){
+	public JPanel createItemCard(Slot s){
 		Item item = (Item)s.obj;
 
 		JPanel panel = new JPanel();
@@ -111,7 +112,7 @@ public class Inventory extends JTabbedPane {
 		text.setFocusable(false);
 		text.setForeground(Color.BLACK);
 
-		int[] tsize = getTextSize(text);
+		int[] tsize = data.getTextSize(text);
 		text.setBounds(descWidth / 2 - tsize[0] / 2, data.size * 2 + data.size / 2, tsize[0], tsize[1]);
 
 		JTextArea description = new JTextArea("Time to make : " + item.time + "s");
@@ -127,19 +128,10 @@ public class Inventory extends JTabbedPane {
 		return panel;
 	}
 
-	public int[] getTextSize(JTextArea text){
-		FontMetrics fontMetrics = text.getFontMetrics(text.getFont());
-
-		int[] i = new int[2];
-		i[0] = fontMetrics.charsWidth(text.getText().toCharArray(), 0, text.getText().length());
-		i[1] = fontMetrics.getHeight();
-		return (i);
-	}
-
 	public void updateMoney(){
 		moneyText.setText(money + "$");
 
-		int[] size = getTextSize(moneyText);
+		int[] size = data.getTextSize(moneyText);
 		moneyText.setBounds(width - width / 10 - size[0], height / 50, size[0], size[1]);
 	}
 
@@ -150,10 +142,13 @@ public class Inventory extends JTabbedPane {
 
 		updateMoney();
 		for (Slot s : items){
-			JPanel desc = createDesCard(s);
-
-			Item item = (Item)s.obj;
-			JButton button = new JButton(new ImageIcon(new ImageIcon(item.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
+			JPanel desc;
+			switch (s.obj.getType()){
+				case MACHINE : ((Machine)s.obj).initialiseMachine(); desc = ((Machine)s.obj).mainPanel; break;
+				default: desc = createItemCard(s);
+			}
+		
+			JButton button = new JButton(new ImageIcon(new ImageIcon(s.obj.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
 			button.setBounds(data.size * 2 * i + spaceBetween * (i + 1), j * data.size * 2 + (j + 1) * spaceBetween, data.size * 2, data.size * 2);
 			button.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e){
@@ -168,21 +163,21 @@ public class Inventory extends JTabbedPane {
 				}
 			});
 			button.setFocusable(false);
-
+	
 			String t = "x" + s.nb;
-
+	
 			JTextArea text = new JTextArea(t);
 			text.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
 			text.setBackground(transparent);
 			text.setFocusable(false);
 			text.setForeground(Color.BLACK);
-
-			int[] tsize = getTextSize(text);
+	
+			int[] tsize = data.getTextSize(text);
 			text.setBounds(data.size * 2 * (i + 1) + spaceBetween * (i + 1),
 						   j * data.size * 2 + (j + 1) * spaceBetween,
 						   tsize[0],
 						   tsize[1]);
-
+	
 			invPanel.add(button);
 			invPanel.add(text);
 			invPanel.setLayer(button, 1);
@@ -202,7 +197,7 @@ public class Inventory extends JTabbedPane {
 		invPanel.setOpaque(true);
 		invPanel.setPreferredSize(new Dimension(width / 2, textSize + items.size() * data.size + (items.size() + 1) * spaceBetween));
 		invPanel.setDoubleBuffered(true);
-		invPanel.setFocusable(true);	
+		invPanel.setFocusable(false);	
 		invPanel.setLayout(null);
 		//updateInvPanel();
 		invPanel.setVisible(true);
@@ -254,7 +249,7 @@ public class Inventory extends JTabbedPane {
 		crafttext.setFont(new Font("Squealer Embossed", Font.BOLD, 100 * data.size / 48));
 		crafttext.setFocusable(false);
 
-		int[] tsize = getTextSize(crafttext);
+		int[] tsize = data.getTextSize(crafttext);
 		crafttext.setBounds(width / 2 - tsize[0] / 2, 0, tsize[0], tsize[1]);
 
 		nbRecipe = listObj[1].size();
@@ -268,8 +263,7 @@ public class Inventory extends JTabbedPane {
 
 			String t = r.name + " = ";
 			for (int j = 0; j < r.nbIngredient; j++){
-				Item item = (Item)r.ingredients[j].obj;
-				String textItem = item.name + " x " + r.ingredients[j].nb;
+				String textItem = r.ingredients[j].obj.name + " x " + r.ingredients[j].nb;
 				t += (j == r.nbIngredient - 1) ? textItem : textItem + " + ";
 			} 
 
@@ -311,9 +305,7 @@ public class Inventory extends JTabbedPane {
 
 		for (Slot s : r.ingredients){
 			for (Slot item : items){
-				Item item1 = (Item)s.obj;
-				Item item2 = (Item)item.obj;
-				if (item1.name.equals(item2.name)){
+				if (s.obj.name.equals(item.obj.name)){
 					if (s.nb <= item.nb){
 						did++;
 					}
@@ -329,7 +321,7 @@ public class Inventory extends JTabbedPane {
 		craftPanel.setPreferredSize(new Dimension(width, textSize + listObj[1].size() * data.size + (listObj[1].size() + 1) * spaceBetween));
 		craftPanel.setDoubleBuffered(true);
 		craftPanel.setOpaque(true);
-		craftPanel.setFocusable(true);
+		craftPanel.setFocusable(false);
 		craftPanel.setLayout(null);
 		createCraftPanel();
 		craftPanel.setVisible(true);
@@ -363,8 +355,8 @@ public class Inventory extends JTabbedPane {
 		moneyText.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
 
 		tab1.add(moneyText);
-		tab1.setFocusable(false);
-		tab2.setFocusable(false);
+		tab1.setFocusable(true);
+		tab2.setFocusable(true);
 		tab1.add(descPane);
 		this.addTab("Inventory", tab1);
 		this.addTab("Craft", tab2);
@@ -419,20 +411,21 @@ public class Inventory extends JTabbedPane {
 	}
 
 	public void showInvButton(){
-		data.panel.add(invButton);
+		data.menuPanel.add(invButton);
 	}
 
 	public void removeInvButton(){
-		data.panel.remove(invButton);
+		data.menuPanel.remove(invButton);
 	}
 
 	public void removeInventory(){
 		if (invOpen == true){
-			data.panel.remove(this);
+			data.menuPanel.remove(this);
+			descPane.removeAll();
 			invOpen = false;
 			data.windowOpen = false;
-			data.panel.revalidate();
-			data.panel.requestFocusInWindow();
+			data.menuPanel.revalidate();
+			data.menuPanel.requestFocusInWindow();
 		}
 	}
 
@@ -440,14 +433,16 @@ public class Inventory extends JTabbedPane {
 		if (invOpen == false){
 			shop.removeShop();
 			updateInventory();
-			data.panel.add(this);
+			data.menuPanel.add(this);
 			data.windowOpen = true;
+			data.key.move = false;
 			invOpen = true;
 		}
 		else {
 			descPane.removeAll();
-			data.panel.remove(this);
+			data.menuPanel.remove(this);
 			data.windowOpen = false;
+			data.key.move = true;
 			invOpen = false;
 		}
 		data.panel.revalidate();
@@ -520,7 +515,7 @@ public class Inventory extends JTabbedPane {
 		invtext.setFont(new Font("Squealer Embossed", Font.BOLD, 100 * data.size / 48));
 		invtext.setFocusable(false);
 
-		int[] tsize = getTextSize(invtext);
+		int[] tsize = data.getTextSize(invtext);
 		invtext.setBounds(width / 2 - tsize[0] / 2, 0, tsize[0], tsize[1]);
 
 
@@ -556,12 +551,11 @@ public class Inventory extends JTabbedPane {
 		return pan;
 	}
 
-	public Item getItem(String name, LinkedList<Object>[] items){
+	public Object getItem(String name, LinkedList<Object>[] items){
 		for (int n = 0; n < 2; n++){
 			for (Object o : items[n]){
-				Item i = (Item)o;
-				if (i.name.equals(name)){
-					return i;
+				if (o.name.equals(name)){
+					return o;
 				}
 			}
 		}
@@ -578,6 +572,6 @@ public class Inventory extends JTabbedPane {
 
 
 	public boolean isOpen(){
-		return (data.panel.isAncestorOf(this));
+		return (data.menuPanel.isAncestorOf(this));
 	}
 }

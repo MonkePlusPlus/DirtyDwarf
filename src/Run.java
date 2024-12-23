@@ -38,7 +38,7 @@ public class Run implements Runnable {
 				// GAME LOOP
 				//System.out.println("loop");
 				game.update();
-				game.repaint();
+				game.drawGame();
 				delta--;
 			}
 		}

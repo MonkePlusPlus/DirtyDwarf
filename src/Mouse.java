@@ -11,7 +11,8 @@ public class Mouse extends MouseAdapter {
 	public Data data;
 	public int x;
 	public int y;
-	public boolean click;
+	public boolean leftClick;
+	public boolean rightClick;
 
 	public Mouse() {
 		super();
@@ -19,15 +20,25 @@ public class Mouse extends MouseAdapter {
 
 	@Override 
 	public void mousePressed(MouseEvent mouse) {
-		click = true;
+		if (mouse.getButton() == MouseEvent.BUTTON1){
+			leftClick = true;
+			System.out.println("left Mouse click : " + "x = " + x + " y = " + y);
+
+		} else if (mouse.getButton() == MouseEvent.BUTTON3){
+			rightClick = true;
+			System.out.println("right Mouse click : " + "x = " + x + " y = " + y);
+		}
 		x = mouse.getX();
 		y = mouse.getY();
-		System.out.println("Mouse click : " + "x = " + x + " y = " + y);
 	}
 
 	@Override
-	public void mouseReleased(MouseEvent e){
-		click = false;
+	public void mouseReleased(MouseEvent mouse){
+		if (mouse.getButton() == MouseEvent.BUTTON1){
+			leftClick = false;
+		} else if (mouse.getButton() == MouseEvent.BUTTON3){
+			rightClick = false;
+		}
 	}
 
 	@Override 

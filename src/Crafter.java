@@ -8,6 +8,7 @@ public class Crafter extends Block {
 		NORMAL
 	}
 
+	private int maxCapacity = 100;
 	private CrafterType type;
 
 	public Crafter(Data data, CrafterType type, int x, int y, boolean collision, BufferedImage image){

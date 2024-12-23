@@ -181,8 +181,8 @@ public class Machine extends Object {
 			timerError.restart();
 			return ;
 		}
-
-		map.setTile(new Crafter(data, crafterType, index[1], index[0], true, image), index[1], index[0]);
+		Crafter crafter = new Crafter(data, crafterType, index[1], index[0], true, image);
+		map.setTile(crafter, index[1], index[0]);
 		inventory.deleteObj(this, 1);
 		data.menuPanel.remove(clickText);
 		data.key.editMode = false;
@@ -202,7 +202,9 @@ public class Machine extends Object {
                 	data.menuPanel.add(errorMessage); timerError.restart(); return ;
                 }
 		}
-		map.setTile(new Collecter(data, index[1], index[0], true, newImage), index[1], index[0]);
+		Collecter collecter = new Collecter(data, index[1], index[0], true, newImage);
+		collecter.initialiseCollecter();
+		map.setTile(collecter, index[1], index[0]);
 		inventory.deleteObj(this, 1);
 		data.menuPanel.remove(clickText);
 		data.key.editMode = false;

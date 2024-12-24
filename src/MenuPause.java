@@ -27,6 +27,7 @@ public class MenuPause extends JPanel {
 		super();
 		this.data = data;
 		this.setBackground(myColor);
+		this.setOpaque(false);
 		this.setBounds(0, 0, data.width, data.height);
 		this.addKeyListener(data.key);
 		this.setLayout(null);
@@ -45,7 +46,8 @@ public class MenuPause extends JPanel {
 		pausButton.setFocusPainted(false);
 		pausButton.setVisible(true);
 
-		data.menuPanel.add(pausButton);
+		data.panel.add(pausButton);
+		data.panel.setLayer(pausButton, 1);
 	}
 
 	public void initializeMenuPause(Menu menu){
@@ -53,7 +55,7 @@ public class MenuPause extends JPanel {
 
 		title = new JTextArea("PAUSE");
 		title.setBounds(data.width / 3, data.height / 10, data.width, data.height / 5);
-		title.setFont(new Font("Squealer", Font.BOLD, 150 * (data.width / 1920)));
+		title.setFont(new Font("Squealer", Font.BOLD, 150 * data.size / 48));
 		title.setOpaque(true);
 		title.setBackground(new Color(0, 0, 0, 0));
 		title.setForeground(Color.WHITE);
@@ -67,6 +69,7 @@ public class MenuPause extends JPanel {
 		quitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e){
 				data.panel.removeAll();
+				data.running = false;
 				data.key.pause = false;
 				menu.displayMenu();
 			}
@@ -75,12 +78,13 @@ public class MenuPause extends JPanel {
 		contButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e){
 				removeMenuPause();
-				data.menuPanel.add(pausButton);
+				data.panel.add(pausButton);
+				data.panel.setLayer(pausButton, 1);
 				data.key.pause = false;
 				data.windowOpen = false;
 				data.key.move = true;
-				data.menuPanel.revalidate();
-				data.menuPanel.requestFocusInWindow();
+				data.panel.revalidate();
+				data.panel.requestFocusInWindow();
 			}
 		});
 
@@ -103,16 +107,17 @@ public class MenuPause extends JPanel {
 		data.key.pause = true;
 		data.windowOpen = true;
 
-		data.menuPanel.removeAll();
+		data.clearMenuPanel();
 		
-		data.menuPanel.remove(pausButton);
-		data.menuPanel.add(this);
+		data.panel.remove(pausButton);
+		data.panel.add(this);
+		data.panel.setLayer(this, 2);
 
-		data.menuPanel.revalidate();
-		data.menuPanel.requestFocusInWindow();
+		data.panel.revalidate();
+		data.panel.requestFocusInWindow();
 	}
 
 	public void removeMenuPause(){
-		data.menuPanel.remove(this);
+		data.panel.remove(this);
 	}
 }

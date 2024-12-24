@@ -25,11 +25,14 @@ public class Map extends JPanel {
 	private String[][] stringMap;
 	private Tile[][] tileMap;
 	public LinkedList<Object>[] listObj;
+	public LinkedList<Block> listMachine;
 
 	private BufferedImage floorImg;
 	private BufferedImage wallImg;
 	private BufferedImage shopImg;
 	private BufferedImage startImg;
+	private BufferedImage craftImg;
+	private BufferedImage collectImg;
 	
 	private int lenX = 0;
 	private int lenY = 0;
@@ -80,11 +83,16 @@ public class Map extends JPanel {
 		wallImg = tiles.getSubimage(sizeTile, sizeTile * blockIndex, sizeTile, sizeTile);
 		floorImg = tiles.getSubimage(0, sizeTile * blockIndex, sizeTile, sizeTile);
 		startImg = tiles.getSubimage(sizeTile * 2, 0, sizeTile, sizeTile);
+		collectImg = tiles.getSubimage(sizeTile * 3, 0, sizeTile, sizeTile);
+		craftImg = tiles.getSubimage(sizeTile * 4, 0, sizeTile, sizeTile);
 		shopImg = tiles.getSubimage(sizeTile * 5, 0, sizeTile, sizeTile);
+
 		System.out.println("initialing map");
 		initializeStringMap();
 		initializeItem();
+		initialiseMachine();
 		initializeTileMap();
+		updateMachine();
 		initializePos();
 		return true;
 	}
@@ -143,6 +151,13 @@ public class Map extends JPanel {
 							break ;
 						}
 						index++;
+					}
+					for (Block machine : listMachine){
+						if (stringMap[i][j].equals(machine.symb)){
+							tileMap[i][j] = machine;
+							machine.x = j;
+							machine.y = i;
+						}
 					}
 					if (tileMap[i][j] == null)
 						return false;
@@ -234,6 +249,62 @@ public class Map extends JPanel {
 		return true;
 	}
 
+	public boolean initialiseMachine(){
+		Scanner scan;
+		String line;
+		String[] tabCollecter;
+		String[] tabCrafter;
+		String[] tab;
+		int i = 0;
+
+		listMachine = new LinkedList<Block>();
+		try {
+			scan = new Scanner(fileMap);
+			line = scan.nextLine();
+			while (scan.hasNextLine() && line.equals("ENDINV") == false){
+				line = scan.nextLine();
+			}
+			line = scan.nextLine();
+			tabCollecter = (line.split(":"))[1].split(";");
+			line = scan.nextLine();
+			tabCrafter = (line.split(":"))[1].split(";");
+
+			for (String s : tabCollecter){
+				tab = s.split("_");
+				listMachine.add(new Collecter(getObject(tab[1]), data, this, inventory, 0, 0, true, collectImg,
+							Integer.parseInt(tab[2]), tab[0]));
+				i++;
+			}
+			i = 0;
+			for (String s : tabCrafter){
+				tab = s.split("_");
+				listMachine.add(new Crafter(data, (Recipe)getRecipe(tab[2]), this, inventory,
+								((tab[1].equals("N")) ? Crafter.CrafterType.NORMAL : Crafter.CrafterType.POLYVALENT),
+								0, 0, true, craftImg, tab[0]));
+				i++;
+			}
+			System.out.println();
+			scan.close();
+		} catch (FileNotFoundException e){
+			return false;
+		}
+		return true;
+	}
+
+	public void updateMachine(){
+		for (int y = 0; y < lenY; y++){
+			for (int x = 0; x < lenX; x++){
+				switch (tileMap[y][x].getType()) {
+					case COLLECTER : Collecter collecter = (Collecter)tileMap[y][x];
+						collecter.x = x; collecter.y = y; collecter.initialiseCollecter(); break;
+					case CRAFTER : Crafter crafter = (Crafter)tileMap[y][x]; 
+						crafter.x = x; crafter.y = y; crafter.initialiseCrafer(); break;
+					default: break;
+				}
+			}
+		}
+	}
+
 	@Override
 	public void paintComponent(Graphics g){
 		Toolkit.getDefaultToolkit().sync();
@@ -275,20 +346,36 @@ public class Map extends JPanel {
 		return (inventory.isOpen() || shop.isOpen());
 	}
 
-	public Rectangle getPosMouse(){
-		for (int i = 0; i < lenY; i++){
-			for (Tile t : tileMap[i]) {
-				Block b = (Block)t;
-				if (data.mouse.x <= b.getPosX() + data.size && 
-					data.mouse.x >= b.getPosX() &&
-					data.mouse.y <= b.getPosY() + data.size &&
-					data.mouse.y >= b.getPosY()
-				){
-					return (new Rectangle(b.getPosX(), b.getPosY(), data.size, data.size));
-				}
-			}
+	public int[] getIndexPos(int posX, int posY){
+		int[] pos = new int[2];
+
+		int centerX = data.width / 2 - (data.size / 2);
+		int centerY = data.height / 2 - (data.size / 2);
+
+		posX = ((posX - updateX) - centerX);
+		posY = ((posY - updateY) - centerY);
+
+		int modX = (Math.floorMod(posX, data.size));
+		int modY = (Math.floorMod(posY, data.size));
+		posX -= modX;
+		posY -= modY;
+
+		pos[0] = (posX / data.size) + startPosX;
+		pos[1] = (posY / data.size) + startPosY;
+		if (pos[0] < 0 || pos[0] >= lenX || pos[1] < 0 || pos[1] >= lenY){
+			return null;
 		}
-		return null;
+		return pos;
+	}
+
+
+	public Rectangle getPosMouse(){
+		int[] pos = getIndexPos(data.mouse.x, data.mouse.y);
+
+		if (pos == null){
+			return null;
+		}
+		return new Rectangle(tileMap[pos[1]][pos[0]].posX, tileMap[pos[1]][pos[0]].posY, data.size, data.size);
 	}
 
 	public Color getColorMouse(Rectangle r){
@@ -335,9 +422,8 @@ public class Map extends JPanel {
 	public void update(){
 		if (data.key.pause || data.key.editMode){
 			shop.removeShopButton();
-			shop.removeShop();
-			inventory.removeInventory();
 			inventory.removeInvButton();
+			data.clearMenuPanel();
 		}
 		else {
 			inventory.showInvButton();
@@ -421,7 +507,15 @@ public class Map extends JPanel {
 		updateX -= data.speed;
 	}
 
-	public boolean checkCollision(){
+	public boolean checkCollision(){/* 
+		int[] topL = getIndexPos(player.posX, player.posY);
+		int[] topR = getIndexPos(player.posX + data.size, player.posY);
+		int[] botL = getIndexPos(player.posX, player.posY + data.size);
+		int[] botR = getIndexPos(player.posX + data.size, player.posY + data.size);
+
+		return (!(tileMap[topL[1]][topL[0]].collision || tileMap[topR[1]][topR[0]].collision
+			||  tileMap[botL[1]][botL[0]].collision || tileMap[botR[1]][botR[0]].collision));*/
+
 		for (int i = 0; i < lenY; i++){
 			for (Tile t : tileMap[i]){
 				Block b = (Block)t;
@@ -431,65 +525,75 @@ public class Map extends JPanel {
 					}
 				}
 			}
-		}		
+		}
 		return true;
 	}
 
-	public int nextToRessource(){
-		for (int y = 0; y < lenY; y++){
-			for (int x = 0; x < lenX; x++){
-				if (tileMap[y][x].isTouched()){
-					if (tileMap[y][x].collision || tileMap[y][x].getType() == Tile.TileType.EXIT
-						|| ((Block)tileMap[y][x]).touchPlayer()){
-						return 0;
-					}
-					if (y > 0 && tileMap[y - 1][x].getType() == Tile.TileType.RESSOURCE){
-						return 1;
-					} else if (y < lenY && tileMap[y + 1][x].getType() == Tile.TileType.RESSOURCE) {
-						return 2;
-					} else if (x > 0 && tileMap[y][x - 1].getType() == Tile.TileType.RESSOURCE){
-						return 3;
-					} else if (x < lenX && tileMap[y][x + 1].getType() == Tile.TileType.RESSOURCE){
-						return 4;
-					}
-				}
-			}
+	public int nextToRessource(int x, int y){
+		if (y > 0 && tileMap[y - 1][x].getType() == Tile.TileType.RESSOURCE){
+			return 1;
+		} else if (y < lenY && tileMap[y + 1][x].getType() == Tile.TileType.RESSOURCE) {
+			return 2;
+		} else if (x > 0 && tileMap[y][x - 1].getType() == Tile.TileType.RESSOURCE){
+			return 3;
+		} else if (x < lenX && tileMap[y][x + 1].getType() == Tile.TileType.RESSOURCE){
+			return 4;
 		}
 		return 0;
 	}
 
-	public boolean cantPut(){
-		for (int y = 0; y < lenY; y++){
-			for (int x = 0; x < lenX; x++){
-				if (tileMap[y][x].isTouched()){
-					if (tileMap[y][x].collision || tileMap[y][x].getType() == Tile.TileType.EXIT
-						|| ((Block)tileMap[y][x]).touchPlayer()){
-						return true;
-					}
-				}
-			}
+	public LinkedList<Slot> getNextObject(int x, int y){
+		LinkedList<Slot> objects = new LinkedList<>();
+
+		if (y > 0 && tileMap[y - 1][x].getType() == Tile.TileType.RESSOURCE){
+			objects.add(new Slot(((Ressource)tileMap[y - 1][x]).object, 1));
+		} 
+		if (y < lenY && tileMap[y + 1][x].getType() == Tile.TileType.RESSOURCE) {
+			objects.add(new Slot(((Ressource)tileMap[y + 1][x]).object, 2));
 		}
-		return false;
+		if (x > 0 && tileMap[y][x - 1].getType() == Tile.TileType.RESSOURCE){
+			objects.add(new Slot(((Ressource)tileMap[y][x - 1]).object, 3));
+		} 
+		if (x < lenX && tileMap[y][x + 1].getType() == Tile.TileType.RESSOURCE){
+			objects.add(new Slot(((Ressource)tileMap[y][x + 1]).object, 4));
+		}
+		return objects;
 	}
 
-	public int[] getIndexTouched(){
-		int[] index = new int[2];
-		
-		for (int y = 0; y < lenY; y++){
-			for (int x = 0; x < lenX; x++){
-				if (tileMap[y][x].isTouched()){
-					index[0] = y;
-					index[1] = x;
-					return index;
-				}
-			}
-		}
-		return null;
+	public boolean cantPut(int x, int y){
+		return (tileMap[y][x].collision || tileMap[y][x].getType() == Tile.TileType.EXIT
+			|| tileMap[y][x].touchPlayer());
 	}
 
 	public void setTile(Tile tile, int x, int y){
 		tile.posX = tileMap[y][x].posX;
 		tile.posY = tileMap[y][x].posY;
 		tileMap[y][x] = tile;
+	}
+
+	public void addNewMachine(Block machine){
+		listMachine.add(machine);
+	}
+
+	public Object getObject(String symb){
+		for (Object obj : listObj[0]) {
+			if (obj.symb.equals(symb)){
+				return obj;
+			}
+		}
+		return null;
+	}
+
+	public Object getRecipe(String name){
+		for (Object obj : listObj[1]) {
+			if (obj.name.equals(name)){
+				return obj;
+			}
+		}
+		return null;
+	}
+
+	public String createNewSymb(){
+		return null;
 	}
 }

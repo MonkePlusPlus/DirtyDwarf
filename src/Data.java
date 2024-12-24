@@ -1,8 +1,13 @@
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
@@ -22,6 +27,8 @@ public class Data {
 	public Thread thread;
 	public boolean windowOpen;
 	public JPanel menuPanel;
+
+	public boolean running;
 
 	public Data(int w, int h, int size, int speed, KeyHandler k, JFrame window, JLayeredPane panel, Mouse mouse, Thread thread){
 		this.height = h;
@@ -93,7 +100,28 @@ public class Data {
         return flippedImage;
 	}
 
+	public JButton createButton(String string, Rectangle rect, int fontSize, int fontType, Color color){
+		JButton button = new JButton(string);
+
+		button.setFocusable(false);
+		button.setBackground(color);
+		button.setFont(new Font("Squealer Embossed", fontType, fontSize * size / 48));
+		button.setBounds(rect);
+		return button;
+	}
+
+	public JButton createButton(ImageIcon image, Rectangle rect, int fontSize, int fontType, Color color){
+		JButton button = new JButton(image);
+
+		button.setFocusable(false);
+		button.setBackground(color);
+		button.setFont(new Font("Squealer Embossed", fontType, fontSize * size / 48));
+		button.setBounds(rect);
+		return button;
+	}
+
 	public void clearMenuPanel(){
 		menuPanel.removeAll();
+		windowOpen = false;
 	}
 }

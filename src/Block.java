@@ -3,6 +3,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 public class Block extends Tile {
+
 	public Data data;
 
 	public Block(Data data, int x, int y, boolean collision, BufferedImage image){
@@ -13,6 +14,7 @@ public class Block extends Tile {
 		this.image = image;
 		this.posX = x * data.size;
 		this.posY = y * data.size;
+		this.symb = (collision) ? "1" : "0";
 	}
 
 	public TileType getType(){
@@ -92,7 +94,6 @@ public class Block extends Tile {
 
 		double distance = Math.sqrt(Math.pow(Math.abs(centerX - (posX + data.size / 2)), 2)
 						+ Math.pow(Math.abs(centerY - (posY + data.size / 2)), 2));
-		
 		return distance;
 	}
 

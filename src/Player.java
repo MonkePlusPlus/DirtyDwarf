@@ -9,8 +9,8 @@ public class Player {
 	private Data data;
 	private int x;
 	private int y;
-	private int posX;
-	private int posY;
+	public int posX;
+	public int posY;
 	private int axisX = 0;
 	private int axisY = 0;
 
@@ -29,7 +29,7 @@ public class Player {
 		}
 	}
 
-	public void initializePlayer(int x, int y){
+	public void initializePlayer(){
 		this.x = data.width / 2 - (data.size / 2);
 		this.y = data.height / 2 - (data.size / 2);
 		this.posX = x;

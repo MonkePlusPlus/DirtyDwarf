@@ -483,16 +483,21 @@ public class Shop extends Block {
 	}
 
 	public void showShopButton(){
-		data.menuPanel.add(shopButton);
+		data.panel.add(shopButton);
+		data.panel.setLayer(shopButton, 1);
+
 	}
 
 	public void removeShopButton(){
-		data.menuPanel.remove(shopButton);
+		data.panel.remove(shopButton);
 	}
 
 	public void drawShop(){
+		if (!data.menuPanel.isAncestorOf(mainPane)){
+			shopOpen = false;
+		}
 		if (shopOpen == false){
-			inventory.removeInventory();
+			data.clearMenuPanel();
 			updateShop();
 			data.menuPanel.add(mainPane);
 			data.windowOpen = true;

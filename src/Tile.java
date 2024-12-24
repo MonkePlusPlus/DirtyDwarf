@@ -18,10 +18,13 @@ public abstract class Tile {
 	public int y;
 	public int posY;
 	public int posX;
+	public String symb;
 
 	public abstract TileType getType();
 
 	public abstract void mouseClick();
 
 	public abstract boolean isTouched();
+
+	public abstract boolean touchPlayer();
 }

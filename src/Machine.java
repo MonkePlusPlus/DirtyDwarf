@@ -4,12 +4,12 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 
@@ -61,7 +61,7 @@ public class Machine extends Object {
 		this.timerError = new Timer(3000, new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				data.menuPanel.remove(errorMessage);
+				data.panel.remove(errorMessage);
 			}
 			
 		});
@@ -78,7 +78,7 @@ public class Machine extends Object {
 		int[] textSize = data.getTextSize(errorMessage);
 		errorMessage.setBounds(data.width / 2 - textSize[0] / 2, textSize[1] * 2, textSize[0], textSize[1]);
 
-		clickText = new JTextArea("Right click : PUT | Left Click : CANCEL"); 
+		clickText = new JTextArea("Left click : PUT | Right Click : CANCEL"); 
 		clickText.setFocusable(false);
 		clickText.setBackground(Color.WHITE);
 		clickText.setForeground(Color.BLACK);
@@ -126,13 +126,15 @@ public class Machine extends Object {
 		putButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Thread thread = new Thread(new Runnable() {
+				Thread thread;
+				thread = new Thread(new Runnable() {
 					@Override
 					public void run() {
 						putMachine();
 					}
-				});
+                });
 				thread.start();
+				
 			}
 			
 		});
@@ -157,56 +159,64 @@ public class Machine extends Object {
 			case CRAFTER: data.key.type = 0; break;
 			default: data.key.type = 1; break;
 		}
-		data.menuPanel.add(clickText);
+		data.panel.add(clickText);
+		data.panel.setLayer(clickText, 1);
 		while (data.key.editMode) {
-			System.out.print("loop");
-			if (data.mouse.rightClick) {
-				data.menuPanel.remove(clickText);
-				data.key.editMode = false;
-			}
-			if (data.mouse.leftClick) {
-				switch (type){
-					case CRAFTER : putCrafter(); break;
-					default: putCollecter(); break;
+			SwingUtilities.invokeLater(() -> {
+                if (data.mouse.rightClick || data.key.pause) {
+					data.panel.remove(clickText);
+					if (data.panel.isAncestorOf(errorMessage)){
+						data.panel.remove(errorMessage);
+					}
+					data.key.editMode = false;
 				}
-			}
+				if (data.mouse.leftClick) {
+					switch (type){
+						case CRAFTER : putCrafter(); break;
+						default: putCollecter(); break;
+					}
+				}
+            });
+			try {
+                Thread.sleep(16); // Add small delay to prevent CPU overuse
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
 		}
 	}
 
 	public void putCrafter(){
-		int[] index = map.getIndexTouched();
+		int[] index = map.getIndexPos(data.mouse.x, data.mouse.y);
 
-		if (map.cantPut()) {
-			data.menuPanel.add(errorMessage);
+		if (map.cantPut(index[0], index[1])) {
+			data.panel.add(errorMessage);
+			data.panel.setLayer(errorMessage, 1);
 			timerError.restart();
 			return ;
 		}
-		Crafter crafter = new Crafter(data, crafterType, index[1], index[0], true, image);
-		map.setTile(crafter, index[1], index[0]);
+		Crafter crafter = new Crafter(data, null, map, inventory, crafterType, index[0], index[1], true, image, map.createNewSymb());
+		map.setTile(crafter, index[0], index[1]);
 		inventory.deleteObj(this, 1);
-		data.menuPanel.remove(clickText);
+		data.panel.remove(clickText);
 		data.key.editMode = false;
 	}
 
 	public void putCollecter(){
-		int[] index = map.getIndexTouched();
-		BufferedImage newImage = image;
+		int[] index = map.getIndexPos(data.mouse.x, data.mouse.y);
 		
-		switch (map.nextToRessource()) {
-			case 1 -> newImage = data.rotateImage(image, -90);
-			case 2 -> newImage = data.rotateImage(image, 90);
-			case 3 -> newImage = data.flipImage(image);
-			case 4 -> newImage = image;
-			
-			default -> {
-                	data.menuPanel.add(errorMessage); timerError.restart(); return ;
-                }
+		if (map.cantPut(index[0], index[1]) || map.nextToRessource(index[0], index[1]) == 0) {
+			data.panel.add(errorMessage);
+			data.panel.setLayer(errorMessage, 1);
+			timerError.restart();
+			return ;
 		}
-		Collecter collecter = new Collecter(data, index[1], index[0], true, newImage);
+		Collecter collecter = new Collecter(null, data, map, inventory, index[0], index[1], true, image, 0, map.createNewSymb());
+		map.addNewMachine(collecter);
 		collecter.initialiseCollecter();
-		map.setTile(collecter, index[1], index[0]);
+		map.setTile(collecter, index[0], index[1]);
 		inventory.deleteObj(this, 1);
-		data.menuPanel.remove(clickText);
+		data.panel.remove(clickText);
 		data.key.editMode = false;
 	}
 

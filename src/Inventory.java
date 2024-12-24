@@ -29,7 +29,7 @@ public class Inventory extends JTabbedPane {
 	private LinkedList<Slot> items;
 	private LinkedList<Object>[] listObj;
 
-	public int money;
+	public double money;
 	private JTextArea moneyText;
 
 	final private Data data;
@@ -203,7 +203,7 @@ public class Inventory extends JTabbedPane {
 		invPanel.setVisible(true);
 	}
 
-	public JButton createCraftButtun(Recipe r, int i){
+	public JButton createCraftButton(Recipe r, int i){
 		JButton button = new JButton(r.time + "s");
 		button.setBounds(width - width / 5, textSize + i * data.size + (i + 1) * spaceBetween, width / 8, data.size);
 		button.setBackground(Color.YELLOW);
@@ -274,7 +274,7 @@ public class Inventory extends JTabbedPane {
 			text.setFocusable(false);
 			text.setForeground(Color.BLACK);
 
-			craftButton[i] = createCraftButtun(r, i);
+			craftButton[i] = createCraftButton(r, i);
 			craftPanel.add(craftButton[i]);
 			craftPanel.add(lab);
 			craftPanel.add(text);
@@ -382,7 +382,9 @@ public class Inventory extends JTabbedPane {
 	public boolean startingInventory(File fileMap){
 		Scanner scan;
 		String line;
-		String[] tab;
+		String[] item;
+		String[] money;
+		String[] machine;
 
 		try {
 			scan = new Scanner(fileMap);
@@ -391,8 +393,12 @@ public class Inventory extends JTabbedPane {
 				line = scan.nextLine();
 			}
 			line = scan.nextLine();
-			tab = line.split(":");
-			fillInventory(tab[1]);
+			item = line.split(":");
+			line = scan.nextLine();
+			money = line.split(":");
+			line = scan.nextLine();
+			machine = line.split(":");
+			fillInventory(item[1], money[1], machine[0]);
 			scan.close();
 		} catch (FileNotFoundException e){
 			e.printStackTrace();
@@ -401,26 +407,28 @@ public class Inventory extends JTabbedPane {
 		return true;
 	}
 
-	public void fillInventory(String startInv){
+	public void fillInventory(String startInv, String money, String machine){
 		String[] item = startInv.split(";");
 		
 		for (String s : item){
 			String[] i = s.split("-");
-			addObj(getItem(i[1], listObj), Integer.valueOf(i[0]));
+			addObj(getItem(i[1], listObj), Integer.parseInt(i[0]));
 		}
+		addMoney(Double.parseDouble(money));
 	}
 
 	public void showInvButton(){
-		data.menuPanel.add(invButton);
+		data.panel.add(invButton);
+		data.panel.setLayer(invButton, 1);
 	}
 
 	public void removeInvButton(){
-		data.menuPanel.remove(invButton);
+		data.panel.remove(invButton);
 	}
 
 	public void removeInventory(){
 		if (invOpen == true){
-			data.menuPanel.remove(this);
+			data.clearMenuPanel();
 			descPane.removeAll();
 			invOpen = false;
 			data.windowOpen = false;
@@ -430,8 +438,11 @@ public class Inventory extends JTabbedPane {
 	}
 
 	public void drawInventory(){
+		if (!data.menuPanel.isAncestorOf(this)){
+			invOpen = false;
+		}
 		if (invOpen == false){
-			shop.removeShop();
+			data.clearMenuPanel();
 			updateInventory();
 			data.menuPanel.add(this);
 			data.windowOpen = true;
@@ -439,8 +450,7 @@ public class Inventory extends JTabbedPane {
 			invOpen = true;
 		}
 		else {
-			descPane.removeAll();
-			data.menuPanel.remove(this);
+			data.clearMenuPanel();
 			data.windowOpen = false;
 			data.key.move = true;
 			invOpen = false;
@@ -479,12 +489,12 @@ public class Inventory extends JTabbedPane {
 		return false;
 	}
 
-	public void	addMoney(int amount){
+	public void	addMoney(double amount){
 		money += amount;
 		updateMoney();
 	}
 
-	public void removeMoney(int amount){
+	public void removeMoney(double amount){
 		if (amount > money){
 			return ;
 		}

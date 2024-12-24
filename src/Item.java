@@ -3,8 +3,6 @@ import java.awt.image.BufferedImage;
 
 public class Item extends Object {
 	
-	public String symb;
-	public int time;
 	public boolean type; // true cant move false can move
 
 	public Item(String name, String symb, int time, int price, BufferedImage image, boolean type){

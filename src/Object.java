@@ -12,7 +12,9 @@ public abstract class Object{
 	}
 
 	public int price;
+	public int time;
 	public String name;
+	public String symb;
 	public BufferedImage image;
 
 	public abstract ObjectType getType();

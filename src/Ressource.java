@@ -1,15 +1,18 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.image.BufferedImage;
 import javax.swing.JProgressBar;
+import javax.swing.JTextArea;
 
 public class Ressource extends Block {
 
 	private Inventory inventory;
-	private Object object;
+	public Object object;
 	private JProgressBar progressBar;
 	private boolean isMaking;
 	private int width;
 	private int height;
+	private JTextArea clickText;
 
 	public Ressource(Object object, Inventory inventory, Data data, int x, int y, boolean col, BufferedImage image){
 		super(data, x, y, col, image);
@@ -17,6 +20,7 @@ public class Ressource extends Block {
 		this.width = data.size;
 		this.height = data.size / 3;
 		this.inventory = inventory;
+		this.symb = ((Item)object).symb;
 	}
 
 	public void initialiseRessource(){
@@ -27,6 +31,15 @@ public class Ressource extends Block {
 		progressBar.setString("");
 		progressBar.setBounds(getPosX(), getPosY() - height, width, height);
 		progressBar.setVisible(true);
+
+		clickText = new JTextArea("Right Click : CANCEL"); 
+		clickText.setFocusable(false);
+		clickText.setBackground(Color.WHITE);
+		clickText.setForeground(Color.BLACK);
+		clickText.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
+
+		int[] textSize = data.getTextSize(clickText);
+		clickText.setBounds(data.width / 2 - textSize[0] / 2, textSize[1], textSize[0], textSize[1]);
 	}
 
 	public boolean isOut(){
@@ -48,6 +61,8 @@ public class Ressource extends Block {
 					isMaking = true;
 					Item item = (Item)object;
 					if (item.type){
+						data.panel.add(clickText);
+						data.panel.setLayer(clickText, 1);
 						data.key.move = false;
 					}
 					long start = System.currentTimeMillis();
@@ -55,15 +70,33 @@ public class Ressource extends Block {
 					data.panel.add(progressBar);
 					data.panel.setLayer(progressBar, 1);
 					while ((t = ((System.currentTimeMillis() - start) / 1000)) < item.time){
+						if (data.running == false) {
+							return ;
+						}
 						progressBar.setValue((int)t);
+						if (data.mouse.rightClick && item.type){
+							data.key.move = true;
+							isMaking = false;
+							data.panel.remove(progressBar);
+							data.panel.remove(clickText);
+							return ;
+						}
 						if (isOut() || data.windowOpen || data.key.pause) {
 							if (data.panel.isAncestorOf(progressBar)){
 								data.panel.remove(progressBar);
-						}
+							}
+							if (item.type){
+								data.panel.remove(clickText);
+							}
 						} else {
 							if (data.panel.isAncestorOf(progressBar) == false){
 								data.panel.add(progressBar);
 								data.panel.setLayer(progressBar, 1);
+							}
+							if (item.type){
+								data.key.move = false;
+								if (data.panel.isAncestorOf(clickText) == false)
+									data.panel.add(clickText);
 							}
 							progressBar.setLocation(getPosX(), getPosY() - height);
 						}
@@ -73,6 +106,7 @@ public class Ressource extends Block {
 					}
 					inventory.addObj(object, 1);
 					if (item.type){
+						data.panel.remove(clickText);
 						data.key.move = true;
 					}
 					isMaking = false;

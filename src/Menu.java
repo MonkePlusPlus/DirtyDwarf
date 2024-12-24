@@ -1,7 +1,6 @@
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -26,8 +25,6 @@ public class Menu extends JPanel {
 
 	private JTextArea titleScreen;
 
-	private boolean running = false;
-
 	public Menu(Data data){
 		super();
 		this.data = data;
@@ -40,14 +37,14 @@ public class Menu extends JPanel {
 	}
 
 	public void update(){
-		if (running){
+		if (data.running){
 			map.update();
 			player.update();
 		}
 	}
 
 	public void drawGame(){
-		if (running){
+		if (data.running){
 			map.repaint();
 		}
 	}
@@ -55,7 +52,7 @@ public class Menu extends JPanel {
 	public void initialiseMenu(){
 		titleScreen = new JTextArea("DIRTY DWARF");
 		titleScreen.setBounds(data.width / 5, data.height / 10, data.width, data.height / 5);
-		titleScreen.setFont(new Font("Squealer", Font.BOLD, 150 * (data.width / 1920)));
+		titleScreen.setFont(new Font("Squealer", Font.BOLD, 150 * data.size / 48));
 		titleScreen.setOpaque(true);
 		titleScreen.setBackground(new Color(0, 0, 0, 0));
 		titleScreen.setForeground(Color.WHITE);
@@ -77,7 +74,7 @@ public class Menu extends JPanel {
 			public void actionPerformed(ActionEvent e){
 				data.panel.removeAll();
 				initializeLevel();
-				running = true;
+				data.running = true;
 			}
 		});
 
@@ -102,7 +99,7 @@ public class Menu extends JPanel {
 		this.map = new Map(data, fileMap, inventory, player);
 		this.menuPause = new MenuPause(data);
 
-		player.initializePlayer(0, 0);
+		player.initializePlayer();
 		map.initializeMap();
 		inventory.initializeInventory(map.listObj, fileMap);
 		menuPause.initializeMenuPause(this);
@@ -113,6 +110,7 @@ public class Menu extends JPanel {
 
 	public void displayMenu(){
 		data.panel.removeAll();
+		data.running = false;
 		data.panel.add(this);
 	}
 

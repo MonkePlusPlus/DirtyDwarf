@@ -28,6 +28,7 @@ public class Data {
 	public boolean windowOpen;
 	public JPanel menuPanel;
 
+	public boolean bonusPlayer;
 	public boolean running;
 
 	public Data(int w, int h, int size, int speed, KeyHandler k, JFrame window, JLayeredPane panel, Mouse mouse, Thread thread){

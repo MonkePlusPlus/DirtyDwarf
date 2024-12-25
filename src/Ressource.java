@@ -8,15 +8,17 @@ public class Ressource extends Block {
 
 	private Inventory inventory;
 	public Object object;
+	private Player player;
 	private JProgressBar progressBar;
 	private boolean isMaking;
 	private int width;
 	private int height;
 	private JTextArea clickText;
 
-	public Ressource(Object object, Inventory inventory, Data data, int x, int y, boolean col, BufferedImage image){
+	public Ressource(Object object, Inventory inventory, Player player, Data data, int x, int y, boolean col, BufferedImage image){
 		super(data, x, y, col, image);
 		this.object = object;
+		this.player = player;
 		this.width = data.size;
 		this.height = data.size / 3;
 		this.inventory = inventory;
@@ -69,7 +71,7 @@ public class Ressource extends Block {
 					long t;
 					data.panel.add(progressBar);
 					data.panel.setLayer(progressBar, 1);
-					while ((t = ((System.currentTimeMillis() - start) / 1000)) < item.time){
+					while ((t = ((System.currentTimeMillis() - start) / 1000) * player.bonus) < item.time){
 						if (data.running == false) {
 							return ;
 						}

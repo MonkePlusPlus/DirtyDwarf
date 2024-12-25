@@ -110,7 +110,7 @@ public class Collecter extends Block {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (object != null) {
-					count++;
+					count += bonus;
 					if (count >= object.time) {
 						if (number < maxCapacity){
 							number++;
@@ -213,6 +213,7 @@ public class Collecter extends Block {
 				toggle = 0;
 			}
 		});
+		backButton.setEnabled(!first);
 		LinkedList<Slot> objects = map.getNextObject(x, y);
 		ImageIcon[] image = new ImageIcon[objects.size()];
 		int i = 0;
@@ -242,6 +243,8 @@ public class Collecter extends Block {
 				}
 				removeModifyPane();
 				showCollectPane();
+				first = false;
+				backButton.setEnabled(true);
 			}		
 		});
 	}
@@ -327,8 +330,11 @@ public class Collecter extends Block {
 		data.key.move = false;
 		if (first){
 			showModifyPane();
-			first = false;
 		} else {
+			if (toggle == 1){
+				removeModifyPane();
+				toggle = 0;
+			}
 			showCollectPane();
 		}
 		data.panel.revalidate();

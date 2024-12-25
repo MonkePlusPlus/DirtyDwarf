@@ -33,6 +33,7 @@ public class Shop extends Block {
 	private LinkedList<Object> sellingObj;
 	private Map map;
 	private Inventory inventory;
+	private Player player;
 
 	private JTabbedPane mainPane;
 	private JPanel buyPane;
@@ -71,11 +72,12 @@ public class Shop extends Block {
 	private Timer timerClick;
 	private int sizeTile = 48;
 
-	public Shop(Data data, int x, int y, boolean col, BufferedImage image, Inventory inventory, Map map){
+	public Shop(Data data, Player player, int x, int y, boolean col, BufferedImage image, Inventory inventory, Map map){
 		super(data, x, y, col, image);
 		this.sellingObj = new LinkedList<Object>();
 		this.inventory = inventory;
 		this.map = map;
+		this.player = player;
 		this.posX = data.width / 10;
 		this.posY = data.height / 10;
 		this.width = (int)(data.width / 1.25);
@@ -117,6 +119,8 @@ public class Shop extends Block {
 		sellingObj.add(new Machine(data, TileType.COLLECTER , null, collecterImage, inventory, map, this));
 		sellingObj.add(new Machine(data, TileType.CRAFTER , Crafter.CrafterType.NORMAL, crafterImage, inventory, map, this));
 		sellingObj.add(new Machine(data, TileType.CRAFTER , Crafter.CrafterType.POLYVALENT, crafterImage, inventory, map, this));
+		sellingObj.add(new PotionPlayer(data, player, collecterImage, "Player effect : (mine x 2)", 50, "P", 120, 2));
+		sellingObj.add(new BlockPotion(data, map, inventory, crafterImage, "Machine : (work x 2)", 75, "M", 200, 2));
 	}
 
 	public void initialiseShop(){
@@ -239,7 +243,7 @@ public class Shop extends Block {
 			pane.setLayer(buyButton[bindex], 1);
 			bindex++;
 			col++;
-			if (col > 8){
+			if (col > 7){
 				col = 0;
 				row++;
 			}

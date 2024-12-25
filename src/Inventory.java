@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Image;
 import java.awt.Panel;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -23,6 +24,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 public class Inventory extends JTabbedPane {
 	
@@ -34,6 +37,7 @@ public class Inventory extends JTabbedPane {
 
 	final private Data data;
 	private Shop shop;
+	private Player player;
 
 	private JLayeredPane invPanel;
 	private JLayeredPane craftPanel;
@@ -64,9 +68,10 @@ public class Inventory extends JTabbedPane {
 	Color transparent = new Color(0, 0, 0, 0);
 	//Color myColor = Color.GRAY;
 
-	public Inventory(Data data){
+	public Inventory(Data data, Player player){
 		super();
 		this.data = data;
+		this.player = player;
 		this.items = new LinkedList<>();
 		this.money = 0;
 		this.startX = data.width / 10;
@@ -128,6 +133,64 @@ public class Inventory extends JTabbedPane {
 		return panel;
 	}
 
+	public JPanel createPotionCard(Slot s){
+		Potion potion = (Potion)s.obj;
+
+		JPanel panel = new JPanel();
+		panel.setBackground(myColor);
+		panel.setLayout(null);
+		int descWidth = width / 3;
+		int descHeight = height - textSize * 3;
+		panel.setBounds(0, 0, descWidth, descHeight);
+		panel.setFocusable(false);
+
+		JLabel image = new JLabel(new ImageIcon(new ImageIcon(potion.image).getImage().getScaledInstance(data.size * 2, data.size * 2, Image.SCALE_DEFAULT)));
+		image.setBounds(descWidth / 2 - data.size, 0, data.size * 2, data.size * 2);
+		image.setBackground(Color.WHITE);
+
+		JTextArea text = new JTextArea(potion.name + " x" + s.nb);
+		text.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
+		text.setBackground(transparent);
+		text.setFocusable(false);
+		text.setForeground(Color.BLACK);
+
+		int[] tsize = data.getTextSize(text);
+		text.setBounds(descWidth / 2 - tsize[0] / 2, data.size * 2 + data.size / 2, tsize[0], tsize[1]);
+
+		JTextArea description = new JTextArea("Time of effect : " + potion.time + "s");
+		description.setBounds(descWidth / 10, data.size * 4, descWidth / 2, descHeight / 10);
+		description.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
+		description.setBackground(transparent);
+		description.setFocusable(false);
+		description.setForeground(Color.BLACK);
+
+		JButton useButton = data.createButton("USE", new Rectangle(descWidth / 4, descHeight - descHeight / 5, descWidth / 2, descHeight / 10)
+											, 50, Font.BOLD, Color.YELLOW);
+		useButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				potion.usePotion();
+				switch (potion.getPotionType()) {
+					case BLOCK: break;
+					default: 
+						deleteObj(potion, 1);
+						descPane.removeAll();
+						updateInvPanel(); 
+						break ;
+				}
+			}
+			
+		});
+		useButton.setEnabled(!data.bonusPlayer);
+
+		panel.add(useButton);
+		panel.add(image);
+		panel.add(text);
+		panel.add(description);
+		return panel;
+	}
+
 	public void updateMoney(){
 		moneyText.setText(money + "$");
 
@@ -141,10 +204,12 @@ public class Inventory extends JTabbedPane {
 		int j = 0;
 
 		updateMoney();
+		descPane.removeAll();
 		for (Slot s : items){
 			JPanel desc;
 			switch (s.obj.getType()){
 				case MACHINE : ((Machine)s.obj).initialiseMachine(); desc = ((Machine)s.obj).mainPanel; break;
+				case POTION : desc = createPotionCard(s); break;
 				default: desc = createItemCard(s);
 			}
 		
@@ -313,6 +378,17 @@ public class Inventory extends JTabbedPane {
 			}
 		}
 		return (todo == did);
+	}
+
+	public boolean checkObj(Object obj, int nb){
+		for (Slot invObj : items){
+			if (invObj.obj == obj && invObj.nb >= nb){
+				return true;
+			} else if (invObj.obj == obj && invObj.nb < nb){
+				return false;
+			}
+		}
+		return false;
 	}
 
 	public void initializeCraftPanel(){

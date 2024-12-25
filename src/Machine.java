@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.SystemTray;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -164,6 +165,7 @@ public class Machine extends Object {
 		while (data.key.editMode) {
 			SwingUtilities.invokeLater(() -> {
                 if (data.mouse.rightClick || data.key.pause) {
+					System.out.println("pause");
 					data.panel.remove(clickText);
 					if (data.panel.isAncestorOf(errorMessage)){
 						data.panel.remove(errorMessage);
@@ -197,6 +199,7 @@ public class Machine extends Object {
 		}
 		Crafter crafter = new Crafter(data, null, map, inventory, crafterType, index[0], index[1], true, image, map.createNewSymb());
 		map.setTile(crafter, index[0], index[1]);
+		crafter.initialiseCrafer();
 		inventory.deleteObj(this, 1);
 		data.panel.remove(clickText);
 		data.key.editMode = false;

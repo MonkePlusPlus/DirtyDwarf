@@ -5,6 +5,8 @@ import java.awt.image.BufferedImage;
 public class Block extends Tile {
 
 	public Data data;
+	public int bonus = 1;
+	public boolean hasBonus = false;
 
 	public Block(Data data, int x, int y, boolean collision, BufferedImage image){
 		this.data = data;
@@ -64,6 +66,10 @@ public class Block extends Tile {
 
 	public int getPosY(){
 		return posY;
+	}
+
+	public void setBonus(int nb){
+		bonus = nb;
 	}
 
 	public boolean getCollission(){

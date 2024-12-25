@@ -92,7 +92,6 @@ public class Map extends JPanel {
 		initializeItem();
 		initialiseMachine();
 		initializeTileMap();
-		updateMachine();
 		initializePos();
 		return true;
 	}
@@ -136,7 +135,7 @@ public class Map extends JPanel {
 				} else if (stringMap[i][j].equals("N")) {
 					tileMap[i][j] = new Block(data, j, i, true, null);
 				} else if (stringMap[i][j].equals("M")) {
-					tileMap[i][j] = new Shop(data, j, i, true, shopImg, inventory, this);
+					tileMap[i][j] = new Shop(data, player, j, i, true, shopImg, inventory, this);
 					shop = (Shop)tileMap[i][j];
 					createShop();
 				} else {
@@ -144,7 +143,7 @@ public class Map extends JPanel {
 					for (Object o : listObj[0]){
 						Item item = (Item)o;
 						if (stringMap[i][j].equals(item.getSymb())){
-							tileMap[i][j] = new Ressource(item, inventory, data, j, i, true,
+							tileMap[i][j] = new Ressource(item, inventory, player, data, j, i, true,
 											tiles.getSubimage(sizeTile * index, sizeTile * ressourceIndex, sizeTile, sizeTile));
 							Ressource r = (Ressource)tileMap[i][j];
 							r.initialiseRessource();
@@ -368,6 +367,9 @@ public class Map extends JPanel {
 		return pos;
 	}
 
+	public Tile getTile(int x, int y){
+		return tileMap[y][x];
+	}
 
 	public Rectangle getPosMouse(){
 		int[] pos = getIndexPos(data.mouse.x, data.mouse.y);
@@ -397,8 +399,7 @@ public class Map extends JPanel {
 			} else {
 				return Color.GREEN;
 			}
-		}
-		if (data.key.editMode && data.key.type == 1) {
+		} else if (data.key.editMode && data.key.type == 1) {
 			if (tileMap[y][x].collision || ((Block)tileMap[y][x]).touchPlayer()){
 				return Color.RED;
 			} else if (y > 0 && tileMap[y - 1][x].getType() == Tile.TileType.RESSOURCE){
@@ -411,6 +412,11 @@ public class Map extends JPanel {
 				return Color.GREEN;
 			} else {
 				return Color.WHITE;
+			}
+		} else if (data.key.editMode && data.key.type == 3) {
+			switch (tileMap[y][x].getType()) {
+				case CRAFTER : case COLLECTER : return ((((Block)tileMap[y][x]).hasBonus) ? Color.RED : Color.GREEN);
+				default: return Color.RED;
 			}
 		}
         return switch (tileMap[y][x].getType()) {
@@ -591,6 +597,10 @@ public class Map extends JPanel {
 			}
 		}
 		return null;
+	}
+
+	public LinkedList<Object> getRecipes(){
+		return listObj[1];
 	}
 
 	public String createNewSymb(){

@@ -103,7 +103,6 @@ public class MenuPause extends JPanel {
 	}
 
 	public void displayMenuPause(){
-		data.key.editMode = false;
 		data.key.pause = true;
 		data.windowOpen = true;
 

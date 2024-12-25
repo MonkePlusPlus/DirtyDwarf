@@ -95,13 +95,14 @@ public class Menu extends JPanel {
 		data.window.addMouseMotionListener(data.mouse);
 
 		this.player = new Player(data);
-		this.inventory = new Inventory(data);
+		this.inventory = new Inventory(data, player);
 		this.map = new Map(data, fileMap, inventory, player);
 		this.menuPause = new MenuPause(data);
 
 		player.initializePlayer();
 		map.initializeMap();
 		inventory.initializeInventory(map.listObj, fileMap);
+		map.updateMachine();
 		menuPause.initializeMenuPause(this);
 		map.printMap();
 

@@ -11,6 +11,8 @@ public class Player {
 	private int y;
 	public int posX;
 	public int posY;
+	public int bonus = 1;
+
 	private int axisX = 0;
 	private int axisY = 0;
 

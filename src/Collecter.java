@@ -58,7 +58,7 @@ public class Collecter extends Block {
 	Color transparent = new Color(0, 0, 0, 0);
 
 	public Collecter(Object object, Data data, Map map, Inventory inventory, int x, int y, boolean collision, BufferedImage image, int number, String symb){
-		super(data, x, y, collision, image);
+		super(data, x, y, symb, collision, image);
 		this.object = object;
 		this.map = map;
 		this.inventory = inventory;

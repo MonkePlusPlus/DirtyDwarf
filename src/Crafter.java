@@ -74,9 +74,8 @@ public class Crafter extends Block {
 	Color transparent = new Color(0, 0, 0, 0);
 
 	public Crafter(Data data, Recipe recipe, Map map, Inventory inventory, CrafterType type, int x, int y, boolean collision, BufferedImage image, String symb) {
-		super(data, x, y, collision, image);
+		super(data, x, y, symb, collision, image);
 		this.type = type;
-		this.symb = symb;
 		this.map = map;
 		this.recipe = recipe;
 		this.inventory = inventory;

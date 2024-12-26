@@ -8,15 +8,16 @@ public class Block extends Tile {
 	public int bonus = 1;
 	public boolean hasBonus = false;
 
-	public Block(Data data, int x, int y, boolean collision, BufferedImage image){
+	public Block(Data data, int x, int y, String symb, boolean collision, BufferedImage image){
 		this.data = data;
 		this.x = x;
 		this.y = y;
 		this.collision = collision;
+		this.symb = symb;
 		this.image = image;
 		this.posX = x * data.size;
 		this.posY = y * data.size;
-		this.symb = (collision) ? "1" : "0";
+		this.symb = symb;
 	}
 
 	public TileType getType(){

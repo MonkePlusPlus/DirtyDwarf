@@ -474,7 +474,7 @@ public class Inventory extends JTabbedPane {
 			money = line.split(":");
 			line = scan.nextLine();
 			machine = line.split(":");
-			fillInventory(item[1], money[1], machine[0]);
+			fillInventory(item, money[1], machine);
 			scan.close();
 		} catch (FileNotFoundException e){
 			e.printStackTrace();
@@ -483,19 +483,23 @@ public class Inventory extends JTabbedPane {
 		return true;
 	}
 
-	public void fillInventory(String startInv, String money, String machine){
-		String[] item = startInv.split(";");
-		
-		for (String s : item){
-			String[] i = s.split("-");
-			addObj(getItem(i[1], listObj), Integer.parseInt(i[0]));
+	public void fillInventory(String startInv[], String money, String machine[]){
+		if (startInv.length > 1) {
+			String[] item = startInv[1].split(";");
+			
+			for (String s : item){
+				String[] i = s.split("-");
+				addObj(getItem(i[1], listObj), Integer.parseInt(i[0]));
+			}
 		}
 		addMoney(Double.parseDouble(money));
 	}
 
 	public void showInvButton(){
-		data.panel.add(invButton);
-		data.panel.setLayer(invButton, 1);
+		if (!data.panel.isAncestorOf(invButton)) {
+			data.panel.add(invButton);
+			data.panel.setLayer(invButton, 1);
+		}
 	}
 
 	public void removeInvButton(){

@@ -73,7 +73,7 @@ public class Shop extends Block {
 	private int sizeTile = 48;
 
 	public Shop(Data data, Player player, int x, int y, boolean col, BufferedImage image, Inventory inventory, Map map){
-		super(data, x, y, col, image);
+		super(data, x, y, "S", col, image);
 		this.sellingObj = new LinkedList<Object>();
 		this.inventory = inventory;
 		this.map = map;
@@ -487,8 +487,10 @@ public class Shop extends Block {
 	}
 
 	public void showShopButton(){
-		data.panel.add(shopButton);
-		data.panel.setLayer(shopButton, 1);
+		if (!data.panel.isAncestorOf(shopButton)) {
+			data.panel.add(shopButton);
+			data.panel.setLayer(shopButton, 1);
+		}
 
 	}
 

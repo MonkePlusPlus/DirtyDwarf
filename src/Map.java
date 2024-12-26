@@ -97,10 +97,13 @@ public class Map extends JPanel {
 	}
 
 	public void initializePos(){
+		int j;
 		for (int i = 0; i < lenY; i++){
+			j = 0;
 			for (Tile t : tileMap[i]){
 				Block b = (Block)t;
 				b.initializePos(startPosX, startPosY);
+				j++;
 			}
 		}
 	}
@@ -120,21 +123,21 @@ public class Map extends JPanel {
 	}
 
 	public boolean initializeTileMap(){
-		tileMap = new Block[lenY][lenX];
+		tileMap = new Tile[lenY][lenX];
 		System.out.println("x : " + lenX + " y : " + lenY);
 		for (int i = 0; i < lenY; i++){
 			for (int j = 0; j < lenX; j++){
 				if (stringMap[i][j].equals("1")) {
-					tileMap[i][j] = new Block(data, j, i, true, wallImg);
+					tileMap[i][j] = new Block(data, j, i, "1", true, wallImg);
 				} else if (stringMap[i][j].equals("0")) {
-					tileMap[i][j] = new Block(data, j, i, false, floorImg);
+					tileMap[i][j] = new Block(data, j, i, "0", false, floorImg);
 				} else if (stringMap[i][j].equals("P")){
 					startPosX = j;
 					startPosY = i;
-					tileMap[i][j] = new Block(data, j, i, false, startImg);
-				} else if (stringMap[i][j].equals("N")) {
-					tileMap[i][j] = new Block(data, j, i, true, null);
-				} else if (stringMap[i][j].equals("M")) {
+					tileMap[i][j] = new Block(data, j, i, "P", false, startImg);
+				} else if (stringMap[i][j].equals(".")) {
+					tileMap[i][j] = new Block(data, j, i, ".", true, null);
+				} else if (stringMap[i][j].equals("S")) {
 					tileMap[i][j] = new Shop(data, player, j, i, true, shopImg, inventory, this);
 					shop = (Shop)tileMap[i][j];
 					createShop();
@@ -143,7 +146,7 @@ public class Map extends JPanel {
 					for (Object o : listObj[0]){
 						Item item = (Item)o;
 						if (stringMap[i][j].equals(item.getSymb())){
-							tileMap[i][j] = new Ressource(item, inventory, player, data, j, i, true,
+							tileMap[i][j] = new Ressource(item, inventory, player, data, j, i, item.getSymb(), true,
 											tiles.getSubimage(sizeTile * index, sizeTile * ressourceIndex, sizeTile, sizeTile));
 							Ressource r = (Ressource)tileMap[i][j];
 							r.initialiseRessource();
@@ -154,8 +157,10 @@ public class Map extends JPanel {
 					for (Block machine : listMachine){
 						if (stringMap[i][j].equals(machine.symb)){
 							tileMap[i][j] = machine;
+							System.out.println("Machine " + tileMap[i][j].symb);
 							machine.x = j;
 							machine.y = i;
+							break ;
 						}
 					}
 					if (tileMap[i][j] == null)
@@ -254,6 +259,8 @@ public class Map extends JPanel {
 		String[] tabCollecter;
 		String[] tabCrafter;
 		String[] tab;
+		int nbCollecter;
+		int nbCrafter;
 		int i = 0;
 
 		listMachine = new LinkedList<Block>();
@@ -264,23 +271,29 @@ public class Map extends JPanel {
 				line = scan.nextLine();
 			}
 			line = scan.nextLine();
-			tabCollecter = (line.split(":"))[1].split(";");
-			line = scan.nextLine();
-			tabCrafter = (line.split(":"))[1].split(";");
-
-			for (String s : tabCollecter){
-				tab = s.split("_");
-				listMachine.add(new Collecter(getObject(tab[1]), data, this, inventory, 0, 0, true, collectImg,
-							Integer.parseInt(tab[2]), tab[0]));
-				i++;
+			tab = line.split(":");
+			if (tab.length > 1) {
+				tabCollecter = tab[1].split(";");
+				for (String s : tabCollecter){
+					tab = s.split("_");
+					listMachine.add(new Collecter(getObject(tab[1]), data, this, inventory, 0, 0, true, collectImg,
+								Integer.parseInt(tab[2]), tab[0]));
+					i++;
+				}
 			}
-			i = 0;
-			for (String s : tabCrafter){
-				tab = s.split("_");
-				listMachine.add(new Crafter(data, (Recipe)getRecipe(tab[2]), this, inventory,
-								((tab[1].equals("N")) ? Crafter.CrafterType.NORMAL : Crafter.CrafterType.POLYVALENT),
-								0, 0, true, craftImg, tab[0]));
-				i++;
+			line = scan.nextLine();
+			tab = line.split(":");
+			if (tab.length > 1) {
+				tabCrafter = tab[1].split(";");
+				i = 0;
+				for (String s : tabCrafter){
+					tab = s.split("_");
+					listMachine.add(new Crafter(data, (Recipe)getRecipe(tab[2]), this, inventory,
+									((tab[1].equals("N")) ? Crafter.CrafterType.NORMAL : Crafter.CrafterType.POLYVALENT),
+									0, 0, true, craftImg, tab[0]));
+					System.out.println("Machine : " + listMachine.getLast().symb);
+					i++;
+				}
 			}
 			System.out.println();
 			scan.close();
@@ -316,16 +329,16 @@ public class Map extends JPanel {
 	public void drawMap(Graphics2D g){
 		for (int i = 0; i < lenY; i++){
 			if (tileMap == null){
-				System.out.println("failed to load map");
+				//System.out.println("failed to load map");
 				return ;
 			}
 			if (tileMap[i] == null){
-				System.out.println("failed to load : block" + i);
+				//System.out.println("failed to load : block" + i);
 			}
 			for (Tile t : tileMap[i]){
 				Block b = (Block)t;
 				if (b == null){
-					System.out.println("failed to load in block[i] : " + i);
+					//System.out.println("failed to load in block[i] : " + i);
 				} else {
 					b.drawBlock(g);
 					if (data.key.editMode == false){
@@ -468,6 +481,16 @@ public class Map extends JPanel {
 		for (int i = 0; i < lenY; i++){
 			for (int j = 0; j < lenX; j++){
 				System.out.print(stringMap[i][j] + " ");
+			}
+			System.out.println();
+		}
+	}
+
+	public void printTileMap(){
+		System.out.println("Printing map");
+		for (int i = 0; i < lenY; i++){
+			for (int j = 0; j < lenX; j++){
+				System.out.print(tileMap[i][j].symb + " ");
 			}
 			System.out.println();
 		}

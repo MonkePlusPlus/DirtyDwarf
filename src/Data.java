@@ -46,7 +46,6 @@ public class Data {
 	public void initialisePanel(){
 		this.menuPanel = new JPanel();
 		this.menuPanel.setBounds(0, 0, width, height);
-		//this.menuPanel.setBackground(new Color(0, 0, 0, 0));
 		this.menuPanel.setOpaque(false);
 		this.menuPanel.setFocusable(false);
 		this.menuPanel.setLayout(null);

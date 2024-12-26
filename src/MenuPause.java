@@ -54,12 +54,13 @@ public class MenuPause extends JPanel {
 		this.menu = menu;
 
 		title = new JTextArea("PAUSE");
-		title.setBounds(data.width / 3, data.height / 10, data.width, data.height / 5);
-		title.setFont(new Font("Squealer", Font.BOLD, 150 * data.size / 48));
-		title.setOpaque(true);
+		title.setFont(new Font("Squealer Embossed", Font.PLAIN, 150 * data.size / 48));
 		title.setBackground(new Color(0, 0, 0, 0));
 		title.setForeground(Color.WHITE);
 		title.setFocusable(false);
+
+		int[] tsize = data.getTextSize(title);
+		title.setBounds(data.width / 2 - tsize[0] / 2, data.height / 10, tsize[0], tsize[1]);
 
 		contButton = createButton("CONTINUE", data.width / 3, (data.height / 6) * 2);
 		sauvButton = createButton("SAVE", data.width / 3, (data.height / 6) * 3);
@@ -109,8 +110,10 @@ public class MenuPause extends JPanel {
 		data.clearMenuPanel();
 		
 		data.panel.remove(pausButton);
-		data.panel.add(this);
-		data.panel.setLayer(this, 2);
+		if (!data.panel.isAncestorOf(this)) {
+			data.panel.add(this);
+			data.panel.setLayer(this, 2);
+		}
 
 		data.panel.revalidate();
 		data.panel.requestFocusInWindow();

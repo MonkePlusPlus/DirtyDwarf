@@ -15,8 +15,8 @@ public class Ressource extends Block {
 	private int height;
 	private JTextArea clickText;
 
-	public Ressource(Object object, Inventory inventory, Player player, Data data, int x, int y, boolean col, BufferedImage image){
-		super(data, x, y, col, image);
+	public Ressource(Object object, Inventory inventory, Player player, Data data, int x, int y, String symb, boolean col, BufferedImage image){
+		super(data, x, y, symb, col, image);
 		this.object = object;
 		this.player = player;
 		this.width = data.size;

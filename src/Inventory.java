@@ -171,18 +171,10 @@ public class Inventory extends JTabbedPane {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				potion.usePotion();
-				switch (potion.getPotionType()) {
-					case BLOCK: break;
-					default: 
-						deleteObj(potion, 1);
-						descPane.removeAll();
-						updateInvPanel(); 
-						break ;
-				}
+				descPane.removeAll();
 			}
 			
 		});
-		useButton.setEnabled(!data.bonusPlayer);
 
 		panel.add(useButton);
 		panel.add(image);

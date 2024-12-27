@@ -69,9 +69,9 @@ public class MenuPause extends JPanel {
 
 		quitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e){
-				data.panel.removeAll();
 				data.running = false;
 				data.key.pause = false;
+				data.panel.removeAll();
 				menu.displayMenu();
 			}
 		});

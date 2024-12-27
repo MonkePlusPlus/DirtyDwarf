@@ -24,7 +24,7 @@ public class Player {
 	public Player(Data data){
 		this.data = data;
 		try {
-			this.imageTile = ImageIO.read(new File("asset/player.png"));
+			this.imageTile = ImageIO.read(new File("asset/old/player.png"));
 			this.image = imageTile.getSubimage(0, 0, sizeTile, sizeTile);
 		} catch (IOException e){
 			e.setStackTrace(null);

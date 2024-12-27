@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.util.LinkedList;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
@@ -28,11 +29,14 @@ public class Map extends JPanel {
 	public LinkedList<Block> listMachine;
 
 	private BufferedImage floorImg;
-	private BufferedImage wallImg;
+	private BufferedImage[] wallImg;
 	private BufferedImage shopImg;
 	private BufferedImage startImg;
-	private BufferedImage craftImg;
+	private BufferedImage craftNImg;
+	private BufferedImage craftPImg;
 	private BufferedImage collectImg;
+
+	private BufferedImage packImg;
 	
 	private int lenX = 0;
 	private int lenY = 0;
@@ -44,14 +48,13 @@ public class Map extends JPanel {
 	private int updateY = 0;
 	private int blockIndex = 0;
 	private int ressourceIndex = 1;
-	private int itemIndex = 2;
 	private int recipeIndex = 3;
 	private int coinIndex = 4;
 
 	private BufferedImage tiles;
-	private int sizeTile = 48;
+	private int sizeTile = 24;
 
-	public Map(Data data, File file, Inventory inventory, Player player){
+	public Map(Data data, File file, Inventory inventory, Player player, String[] texturePack){
 		super();
 		this.data = data;
 		this.inventory = inventory;
@@ -59,6 +62,12 @@ public class Map extends JPanel {
 		this.centerX = data.width / 2 - (data.size / 2);
 		this.centerY = data.height / 2 - (data.size / 2);
 		this.fileMap = file;
+
+		try {
+			this.packImg = ImageIO.read(new File("asset/pack/" + texturePack[0]));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		this.setBounds(0, 0, data.width, data.height);
 		this.setBackground(Color.BLACK);
@@ -80,12 +89,16 @@ public class Map extends JPanel {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		wallImg = tiles.getSubimage(sizeTile, sizeTile * blockIndex, sizeTile, sizeTile);
-		floorImg = tiles.getSubimage(0, sizeTile * blockIndex, sizeTile, sizeTile);
-		startImg = tiles.getSubimage(sizeTile * 2, 0, sizeTile, sizeTile);
-		collectImg = tiles.getSubimage(sizeTile * 3, 0, sizeTile, sizeTile);
-		craftImg = tiles.getSubimage(sizeTile * 4, 0, sizeTile, sizeTile);
-		shopImg = tiles.getSubimage(sizeTile * 5, 0, sizeTile, sizeTile);
+		wallImg = new BufferedImage[4];
+		for (int i = 0; i < 4;i++){
+			wallImg[i] = tiles.getSubimage(sizeTile * i, 0, sizeTile, sizeTile);
+		}
+		floorImg = tiles.getSubimage(sizeTile * 4, 0, sizeTile, sizeTile);
+		startImg = tiles.getSubimage(sizeTile * 4, sizeTile, sizeTile, sizeTile);
+		collectImg = tiles.getSubimage(0, sizeTile, sizeTile, sizeTile);
+		craftNImg = tiles.getSubimage(sizeTile, sizeTile, sizeTile, sizeTile);
+		craftPImg = tiles.getSubimage(sizeTile * 2, sizeTile, sizeTile, sizeTile);
+		shopImg = tiles.getSubimage(sizeTile * 3, sizeTile, sizeTile, sizeTile);
 
 		System.out.println("initialing map");
 		initializeStringMap();
@@ -128,7 +141,7 @@ public class Map extends JPanel {
 		for (int i = 0; i < lenY; i++){
 			for (int j = 0; j < lenX; j++){
 				if (stringMap[i][j].equals("1")) {
-					tileMap[i][j] = new Block(data, j, i, "1", true, wallImg);
+					tileMap[i][j] = new Block(data, j, i, "1", true, getWallImage(j, i));
 				} else if (stringMap[i][j].equals("0")) {
 					tileMap[i][j] = new Block(data, j, i, "0", false, floorImg);
 				} else if (stringMap[i][j].equals("P")){
@@ -138,7 +151,7 @@ public class Map extends JPanel {
 				} else if (stringMap[i][j].equals(".")) {
 					tileMap[i][j] = new Block(data, j, i, ".", true, null);
 				} else if (stringMap[i][j].equals("S")) {
-					tileMap[i][j] = new Shop(data, player, j, i, true, shopImg, inventory, this);
+					tileMap[i][j] = new Shop(data, player, j, i, true, shopImg, inventory, this, packImg);
 					shop = (Shop)tileMap[i][j];
 					createShop();
 				} else {
@@ -147,7 +160,7 @@ public class Map extends JPanel {
 						Item item = (Item)o;
 						if (stringMap[i][j].equals(item.getSymb())){
 							tileMap[i][j] = new Ressource(item, inventory, player, data, j, i, item.getSymb(), true,
-											tiles.getSubimage(sizeTile * index, sizeTile * ressourceIndex, sizeTile, sizeTile));
+											packImg.getSubimage( sizeTile * index, 0, sizeTile, sizeTile));
 							Ressource r = (Ressource)tileMap[i][j];
 							r.initialiseRessource();
 							break ;
@@ -169,6 +182,48 @@ public class Map extends JPanel {
 			}
 		}
 		return true;
+	}
+
+	public BufferedImage getWallImage(int x, int y){
+		if (stringMap[y + 1][x].equals(".")){
+			return wallImg[3];
+		} else if (stringMap[y][x - 1].equals("1") && stringMap[y][x + 1].equals("1")){
+			//if (stringMap[y - 1][x].equals("0")) {
+				//return data.rotateImage(wallImg[1], 180);
+			//}//
+			return wallImg[1];
+		} else if (stringMap[y - 1][x].equals("1") && stringMap[y + 1][x].equals("1")){
+			if (stringMap[y][x + 1].equals("0") || (!stringMap[y][x + 1].equals(".") && !stringMap[y][x + 1].equals("1"))){
+				return data.rotateImage(wallImg[1], -90);
+			}
+			return data.rotateImage(wallImg[1], 90);
+
+		} else if (stringMap[y - 1][x].equals("1") && stringMap[y][x + 1].equals("1")){
+			if (stringMap[y - 1][x + 1].equals("0") || (!stringMap[y - 1][x + 1].equals(".") && !stringMap[y - 1][x + 1].equals("1"))){
+				return data.rotateImage(wallImg[2], 180);
+			} else {
+				return wallImg[0];
+			}
+		} else if (stringMap[y - 1][x].equals("1") && stringMap[y][x - 1].equals("1")){
+			if (stringMap[y - 1][x - 1].equals("0") || (!stringMap[y - 1][x - 1].equals(".") && !stringMap[y - 1][x - 1].equals("1"))){
+				return data.rotateImage(wallImg[2], 90);
+			} else {
+				return data.rotateImage(wallImg[0], -90);
+			}
+		} else if (stringMap[y + 1][x].equals("1") && stringMap[y][x + 1].equals("1")){
+			if (stringMap[y + 1][x + 1].equals("0") || (!stringMap[y + 1][x + 1].equals(".") && !stringMap[y + 1][x + 1].equals("1"))){
+				return data.rotateImage(wallImg[2], -90);
+			} else {
+				return data.rotateImage(wallImg[0], 90);
+			}
+		} else if (stringMap[y + 1][x].equals("1") && stringMap[y][x - 1].equals("1")){
+			if (stringMap[y + 1][x - 1].equals("0") || (!stringMap[y + 1][x - 1].equals(".") && !stringMap[y + 1][x - 1].equals("1"))){
+				return wallImg[2];
+			} else {
+				return data.rotateImage(wallImg[0], 180);
+			}
+		}
+		return wallImg[1];
 	}
 
 	public boolean initializeStringMap(){
@@ -231,15 +286,15 @@ public class Map extends JPanel {
 			for (String s : tabItem){
 				tab = s.split("_");
 				listObj[0].add(new Item(tab[0], tab[1], Integer.parseInt(tab[2]), Integer.parseInt(tab[3]),
-								tiles.getSubimage(sizeTile * i, sizeTile * itemIndex, sizeTile, sizeTile),
-								(Integer.parseInt(tab[4]) == 1)));
+							packImg.getSubimage(sizeTile * i, sizeTile, sizeTile, sizeTile),
+							(Integer.parseInt(tab[4]) == 1)));
 				i++;
 			}
 			i = 0;
 			for (String s : tabRecipe){
 				tab = s.split("_");
 				listObj[1].add(new Recipe(tab[0], tab[1], null, Integer.parseInt(tab[2]), Integer.parseInt(tab[3]),
-								tiles.getSubimage(sizeTile * i, sizeTile * recipeIndex, sizeTile, sizeTile)));
+							packImg.getSubimage(sizeTile * i, sizeTile * 2, sizeTile, sizeTile)));
 				i++;
 			}
 			System.out.println();
@@ -290,7 +345,8 @@ public class Map extends JPanel {
 					tab = s.split("_");
 					listMachine.add(new Crafter(data, (Recipe)getRecipe(tab[2]), this, inventory,
 									((tab[1].equals("N")) ? Crafter.CrafterType.NORMAL : Crafter.CrafterType.POLYVALENT),
-									0, 0, true, craftImg, tab[0]));
+									0, 0, true, 
+									((tab[1].equals("N")) ? craftNImg : craftPImg), tab[0]));
 					System.out.println("Machine : " + listMachine.getLast().symb);
 					i++;
 				}
@@ -340,6 +396,13 @@ public class Map extends JPanel {
 				if (b == null){
 					//System.out.println("failed to load in block[i] : " + i);
 				} else {
+					switch (b.getType()) {
+						case CRAFTER : case COLLECTER : case RESSOURCE : case SHOP :
+							g.drawImage(floorImg, b.posX, b.posY, data.size, data.size, null);
+							break;
+						default:
+							break;
+					}
 					b.drawBlock(g);
 					if (data.key.editMode == false){
 						b.mouseClick();

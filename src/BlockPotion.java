@@ -61,7 +61,6 @@ public class BlockPotion extends Potion {
 			public void actionPerformed(ActionEvent e) {
 				data.panel.remove(errorMessage);
 			}
-			
 		});
 		timerError.setRepeats(false);
 	}
@@ -153,6 +152,10 @@ public class BlockPotion extends Potion {
 			public void actionPerformed(ActionEvent e) {
 				pg.setValue(count.get(index));
 				count.set(index, count.get(index) + 1);
+				if (data.running == false) {
+					timer.stop();
+					return ;
+				}
 				if (data.key.pause){
 					data.panel.remove(pg);
 				} else if (data.panel.isAncestorOf(pg) == false){

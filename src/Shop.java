@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.util.LinkedList;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -63,19 +64,25 @@ public class Shop extends Block {
 	private JButton shopButton;
 	private boolean shopOpen;
 
-	private BufferedImage collecterImage;
-	private BufferedImage crafterImage;
+	private BufferedImage packImg;
+	private BufferedImage tiles;
+	private BufferedImage collectImg;
+	private BufferedImage craftNImg;
+	private BufferedImage craftPImg;
+	private BufferedImage potionPImg;
+	private BufferedImage potionMImg;
 
 	Color myColor = new Color(255, 255, 255, 150);
 	Color transparent = new Color(0, 0, 0, 0);
 
 	private Timer timerClick;
-	private int sizeTile = 48;
+	private int sizeTile = 24;
 
-	public Shop(Data data, Player player, int x, int y, boolean col, BufferedImage image, Inventory inventory, Map map){
+	public Shop(Data data, Player player, int x, int y, boolean col, BufferedImage image, Inventory inventory, Map map, BufferedImage packImg){
 		super(data, x, y, "S", col, image);
 		this.sellingObj = new LinkedList<Object>();
 		this.inventory = inventory;
+		this.packImg = packImg;
 		this.map = map;
 		this.player = player;
 		this.posX = data.width / 10;
@@ -86,9 +93,13 @@ public class Shop extends Block {
 		this.spaceBetween = width / 25;
 		this.shopOpen = false;
 		try {
+			tiles = ImageIO.read(new File("asset/tiles.png"));
 			shopKepper = ImageIO.read(new File("asset/shop.png"));
-			collecterImage = ImageIO.read(new File("asset/tiles.png")).getSubimage(sizeTile * 3, 0, sizeTile, sizeTile);
-			crafterImage = ImageIO.read(new File("asset/tiles.png")).getSubimage(sizeTile * 4, 0, sizeTile, sizeTile);
+			collectImg = tiles.getSubimage(0, sizeTile, sizeTile, sizeTile);
+			craftNImg = tiles.getSubimage(sizeTile, sizeTile, sizeTile, sizeTile);
+			craftPImg = tiles.getSubimage(sizeTile * 2, sizeTile, sizeTile, sizeTile);
+			potionPImg = packImg.getSubimage(sizeTile * 3, 0, sizeTile, sizeTile);
+			potionMImg = packImg.getSubimage(sizeTile * 4, 0, sizeTile, sizeTile);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -116,11 +127,11 @@ public class Shop extends Block {
 				}
 			}
 		}
-		sellingObj.add(new Machine(data, TileType.COLLECTER , null, collecterImage, inventory, map, this));
-		sellingObj.add(new Machine(data, TileType.CRAFTER , Crafter.CrafterType.NORMAL, crafterImage, inventory, map, this));
-		sellingObj.add(new Machine(data, TileType.CRAFTER , Crafter.CrafterType.POLYVALENT, crafterImage, inventory, map, this));
-		sellingObj.add(new PotionPlayer(data, player, collecterImage, "Player effect : (mine x 2)", 50, "P", 120, 2));
-		sellingObj.add(new BlockPotion(data, map, inventory, crafterImage, "Machine : (work x 2)", 75, "M", 200, 2));
+		sellingObj.add(new Machine(data, TileType.COLLECTER , null, collectImg, inventory, map, this));
+		sellingObj.add(new Machine(data, TileType.CRAFTER , Crafter.CrafterType.NORMAL, craftNImg, inventory, map, this));
+		sellingObj.add(new Machine(data, TileType.CRAFTER , Crafter.CrafterType.POLYVALENT, craftPImg, inventory, map, this));
+		sellingObj.add(new PotionPlayer(data, player, inventory, potionPImg, "Player effect : (mine x 2)", 50, "P", 120, 2));
+		sellingObj.add(new BlockPotion(data, map, inventory, potionMImg, "Machine : (work x 2)", 75, "M", 200, 2));
 	}
 
 	public void initialiseShop(){

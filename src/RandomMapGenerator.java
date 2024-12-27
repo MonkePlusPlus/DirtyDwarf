@@ -12,6 +12,7 @@ public class RandomMapGenerator {
 	private Random random = new Random();
 	private LinkedList<Rectangle> rooms;
 	private LinkedList<int[]> pairs;
+	private LinkedList<String> objects;
 	private int maxX = 100;
 	private int maxY = 100;
 	private int pathWidth;
@@ -21,23 +22,29 @@ public class RandomMapGenerator {
 	final private int LEFT = 3;
 	final private int RIGHT = 4;
 
-	private void startMap(){
+	private void startMap(String pack){
 		map = new String[maxY][maxX];
 		for (int i = 0; i < maxY; i++) {
 			for (int j = 0; j < maxX; j++){
 				map[i][j] = ".";
 			}
 		}
+		objects = new LinkedList<String>();
+		String[] allObj = pack.split(":")[1].split(";");
+		for (String s : allObj){
+			String[] obj = s.split("_");
+			objects.add(obj[1]);
+		}
 	}
 
 	public void createRandomMap(File file, String[] pack) {
-		int nbRoom = random.nextInt(4, 6);
+		int nbRoom = random.nextInt(5, 6);
 		Rectangle rectangle;
 		int index = 0;
 		int width;
 		int height;
 
-		startMap();
+		startMap(pack[1]);
 		rooms = new LinkedList<Rectangle>();
 		pairs = new LinkedList<int[]>();
 		while (index < nbRoom){
@@ -66,9 +73,10 @@ public class RandomMapGenerator {
 			pair[1] = index;	
 			pairs.add(pair);
 		}
-		fillWall();
+		fillPlayerShop();
 		fillObj();
-		fillFile(file, pack[0], pack[1]);
+		fillWall();
+		fillFile(file, pack[1], pack[2]);
 	}
 
 	public void connectRooms(Rectangle rect1, Rectangle rect2) {
@@ -82,7 +90,6 @@ public class RandomMapGenerator {
 		int y = (int)rect1.getCenterY();
 	
 		int notConnect = 0;
-
 
 		int pos1X = (rect1.getX() > rect2.getX()) ? LEFT : RIGHT;
 		int pos2X = (pos1X == LEFT) ? RIGHT : LEFT;
@@ -98,7 +105,7 @@ public class RandomMapGenerator {
 
 		int direction = (placementDoor1 == TOP || placementDoor1 == BOTTOM) ? 0 : 1;
 		System.out.println("placementDoor1 : " + placementDoor1 + " placementDoor2 : " + placementDoor2);
-		while (notConnect < 2){
+		while (notConnect < 2 &&  i < 10000){
 			if (rect2.contains(new Point(x, y))){
 				notConnect++;
 			}
@@ -142,7 +149,7 @@ public class RandomMapGenerator {
 		
 	}
 
-	private void fillObj(){
+	private void fillPlayerShop(){
 		Rectangle r = rooms.getFirst();
 
 		map[(int)r.getCenterY()][(int)r.getCenterX()] = "P";
@@ -182,6 +189,41 @@ public class RandomMapGenerator {
 		map[y][x] = "S";
 	}
 
+	private void fillObj(){
+		int nb = objects.size();
+		int[] nbObj = new int[nb];
+		int[] totpose = new int[nb];
+		int[] maxNb = new int[nb];
+ 		int index = 0;
+
+		for (int i = 0; i < nb; i++){
+			maxNb[i] = random.nextInt(18, 25) / (i + 1);
+		}
+		for (Rectangle rectangle : rooms){
+			for (int i = 0; i < nb; i++) {
+				System.out.println("nb = " + (int)((rectangle.getWidth() + rectangle.getHeight()) / 10));
+				int max = 0;
+				while (
+				(nbObj[i] = (random.nextInt(2 + (int)((rectangle.getWidth() + rectangle.getHeight()) / 20), 6)) / (i + 1)) + totpose[i] > maxNb[i] && max < 100){
+					max++;
+				}
+				if (max == 100){
+					nbObj[i] = 0;
+				}
+				while(index < nbObj[i]) {
+					int x = random.nextInt((int)rectangle.getMinX(), (int)rectangle.getMaxX());
+					int y = random.nextInt((int)rectangle.getMinY(), (int)rectangle.getMaxY());
+					if (map[y][x].equals("0")) {
+						map[y][x] = objects.get(i);
+						totpose[i]++;
+						index++;
+					}
+				}
+				index = 0;
+			}
+		}
+	}
+
 	private void fillWall(){
 		for (int y = 0; y < maxY; y++){
 			for (int x = 0; x < maxX; x++){
@@ -209,6 +251,49 @@ public class RandomMapGenerator {
 					}
 					if (map[y - 1][x - 1].equals(".")){
 						map[y - 1][x - 1] = "1";
+					}
+				}
+			}
+		}
+		for (Rectangle r : rooms) {
+			int maxX = (int)r.getMaxX();
+			int minX = (int)r.getMinX();
+			int maxY = (int)r.getMaxY();
+			int minY = (int)r.getMinY();
+			for (int i = minY + 1; i < maxY; i++) {
+				for (int j = minX + 1; j < maxX; j++){
+					if (!map[i][minX].equals("0") && !map[i][minX].equals("1")){
+						map[i][minX] = "0";
+					}
+					if (!map[i][maxX].equals("0") && !map[i][maxX].equals("1")){
+						map[i][maxX] = "0";
+					}
+					if (!map[minY][j].equals("0") && !map[minY][j].equals("1")){
+						map[minY][j] = "0";
+					}
+					if (!map[maxY][j].equals("0") && !map[maxY][j].equals("1")){
+						map[maxY][j] = "0";
+					}
+					
+					if (map[i][minX].equals("0")){
+						if (!map[i][minX + 1].equals("0")){
+							map[i][minX + 1] = "0";
+						}
+					}
+					if (map[i][maxX].equals("0")){
+						if (!map[i][maxX - 1].equals("0")){
+							map[i][maxX - 1] = "0";
+						}
+					}
+					if (map[minY][j].equals("0")){
+						if (!map[minY + 1][j].equals("0")){
+							map[minY + 1][j] = "0";
+						}
+					}
+					if (map[maxY][j].equals("0")){
+						if (!map[maxY - 1][j].equals("0")){
+							map[maxY - 1][j] = "0";
+						}
 					}
 				}
 			}

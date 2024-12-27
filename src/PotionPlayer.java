@@ -9,12 +9,13 @@ import javax.swing.Timer;
 public class PotionPlayer extends Potion {
 	
 	private Data data;
+	private Inventory inventory;
 	private Player player;
 	private int count;
 	private int bonus;
 	private JProgressBar progressBar;
 
-	public PotionPlayer(Data data, Player player, BufferedImage image, String name, int price, String symb, int time, int bonus){
+	public PotionPlayer(Data data, Player player, Inventory inventory, BufferedImage image, String name, int price, String symb, int time, int bonus){
 		super();
 		this.image = image;
 		this.name = name;
@@ -22,6 +23,7 @@ public class PotionPlayer extends Potion {
 		this.symb = symb;
 		this.time = time;
 		this.data = data;
+		this.inventory = inventory;
 		this.bonus = bonus;
 		this.player = player;
 		progressBar = new JProgressBar(0, time * 10);
@@ -39,6 +41,11 @@ public class PotionPlayer extends Potion {
 
 	@Override
 	public void usePotion() {
+		if (data.bonusPlayer){
+			return ;
+		}
+		inventory.deleteObj(this, 1);
+		inventory.updateInvPanel(); 
 		progressBar.setValue(0);
 
 		data.panel.add(progressBar);
@@ -52,6 +59,11 @@ public class PotionPlayer extends Potion {
 			public void actionPerformed(ActionEvent evt) {
 				progressBar.setValue(count);
 				count++;
+				if (data.running == false){
+					data.bonusPlayer = false;
+					timer.stop();
+					return ;
+				}
 				if (data.key.pause){
 					data.panel.remove(progressBar);
 				} else if (data.panel.isAncestorOf(progressBar) == false){

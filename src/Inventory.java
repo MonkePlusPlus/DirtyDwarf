@@ -9,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Scanner;
 import javax.swing.BorderFactory;
@@ -38,6 +40,7 @@ public class Inventory extends JTabbedPane {
 	final private Data data;
 	private Shop shop;
 	private Player player;
+	private Map map;
 
 	private JLayeredPane invPanel;
 	private JLayeredPane craftPanel;
@@ -89,6 +92,10 @@ public class Inventory extends JTabbedPane {
 		UIManager.put("TabbedPane.background", Color.RED);
 		SwingUtilities.updateComponentTreeUI(this);
 		this.setVisible(true);
+	}
+
+	public void setMap(Map map) {
+		this.map = map;
 	}
 
 	public void updateInventory(){
@@ -148,7 +155,7 @@ public class Inventory extends JTabbedPane {
 		image.setBounds(descWidth / 2 - data.size, 0, data.size * 2, data.size * 2);
 		image.setBackground(Color.WHITE);
 
-		JTextArea text = new JTextArea(potion.name + " x" + s.nb);
+		JTextArea text = new JTextArea(potion.showName + " x" + s.nb);
 		text.setFont(new Font("Squealer Embossed", Font.PLAIN, 30 * data.size / 48));
 		text.setBackground(transparent);
 		text.setFocusable(false);
@@ -454,8 +461,9 @@ public class Inventory extends JTabbedPane {
 		String[] money;
 		String[] machine;
 
+		File save = new File(fileMap.getPath() + "/save.txt");
 		try {
-			scan = new Scanner(fileMap);
+			scan = new Scanner(save);
 			line = scan.nextLine();
 			while (scan.hasNextLine() && line.equals("ENDOBJ") == false){
 				line = scan.nextLine();
@@ -464,9 +472,8 @@ public class Inventory extends JTabbedPane {
 			item = line.split(":");
 			line = scan.nextLine();
 			money = line.split(":");
-			line = scan.nextLine();
-			machine = line.split(":");
-			fillInventory(item, money[1], machine);
+
+			fillInventory(item, money[1]);
 			scan.close();
 		} catch (FileNotFoundException e){
 			e.printStackTrace();
@@ -475,7 +482,7 @@ public class Inventory extends JTabbedPane {
 		return true;
 	}
 
-	public void fillInventory(String startInv[], String money, String machine[]){
+	public void fillInventory(String startInv[], String money){
 		if (startInv.length > 1) {
 			String[] item = startInv[1].split(";");
 			
@@ -634,14 +641,27 @@ public class Inventory extends JTabbedPane {
 	}
 
 	public Object getItem(String name, LinkedList<Object>[] items){
-		for (int n = 0; n < 2; n++){
-			for (Object o : items[n]){
-				if (o.name.equals(name)){
-					return o;
+		Machine collecter = new Machine(data, Tile.TileType.COLLECTER , null, shop.getCollecImg(), this, map, shop);
+		Machine crafterNormal = new Machine(data, Tile.TileType.CRAFTER , Crafter.CrafterType.NORMAL, shop.getCraftNImg(), this, map, shop);
+		Machine crafterPoly = new Machine(data, Tile.TileType.CRAFTER , Crafter.CrafterType.POLYVALENT, shop.getCraftPImg(), this, map, shop);
+		Potion pPotion = new PotionPlayer(data, player, this, shop.getPotionPImg(), "Player effect : (mine x 2)", 50, "P", 120, 2);
+		Potion bPotion = new BlockPotion(data, map, this, shop.getPotionBImg(), "Machine : (work x 2)", 75, "M", 200, 2);
+		switch (name) {
+			case "BPOTION": return bPotion;
+			case "PPOTION": return pPotion;
+			case "COLLECTER": return collecter;
+			case "NCRAFTER": return crafterNormal;
+			case "PCRAFTER": return crafterPoly;
+			default:
+			for (int n = 0; n < 2; n++){
+				for (Object o : items[n]){
+					if (o.name.equals(name)){
+						return o;
+					}
 				}
 			}
+			return null;
 		}
-		return null;
 	}
 
 	public LinkedList<Slot> getInventory(){
@@ -655,5 +675,18 @@ public class Inventory extends JTabbedPane {
 
 	public boolean isOpen(){
 		return (data.menuPanel.isAncestorOf(this));
+	}
+
+	public void saveInv(FileWriter saveWriter) throws IOException{
+		saveWriter.write("inventory:");
+		for (Slot s : items){
+			if (s == items.getLast()){
+				saveWriter.write(s.nb + "-" + s.obj.name);
+			} else {
+				saveWriter.write(s.nb + "-" + s.obj.name + ";");
+			}
+		}
+		saveWriter.write("\n" + "money:" + money + "\n");
+		saveWriter.write("ENDINV\n");
 	}
 }

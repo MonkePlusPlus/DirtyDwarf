@@ -12,7 +12,7 @@ public class Game extends JLayeredPane {
 		super();
 		this.window = window;
 		this.mouse = new Mouse();
-		this.data = new Data(width, height, (int)((width + height) / 62.5), 6 * (int)((width + height) / 62.5) / 48, new KeyHandler(), window, this, mouse, thread);
+		this.data = new Data(width, height, (int)((width) / 35), 6 * (int)((width) / 35) / 48, new KeyHandler(), window, this, mouse, thread);
 		mouse.data = data;
 		this.menu = new Menu(data);
 		setPreferredSize(new Dimension(width, height));

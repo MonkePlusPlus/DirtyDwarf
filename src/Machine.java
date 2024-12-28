@@ -33,8 +33,8 @@ public class Machine extends Object {
 	private int panelWidth;
 	private int panelHeight;
 
-	private Tile.TileType type;
-	private Crafter.CrafterType crafterType;
+	public Tile.TileType type;
+	public Crafter.CrafterType crafterType;
 
 	private JButton putButton;
 
@@ -55,9 +55,9 @@ public class Machine extends Object {
 		this.panelHeight = height - (height / 9) * 3;
 		switch (type){
 			case CRAFTER : this.price = (crafterType == Crafter.CrafterType.NORMAL) ? 150 : 200 ; 
-						this.name = "Crafter";
+						this.name = (crafterType == Crafter.CrafterType.NORMAL) ? "NCRAFTER" : "PCRAFTER";
 						break;
-			default: this.price = 100; this.name = "Collecter"; break;
+			default: this.price = 100; this.name = "COLLECTER"; break;
 		}
 		this.timerError = new Timer(3000, new ActionListener(){
 			@Override
@@ -197,7 +197,8 @@ public class Machine extends Object {
 			timerError.restart();
 			return ;
 		}
-		Crafter crafter = new Crafter(data, null, map, inventory, crafterType, index[0], index[1], true, image, map.createNewSymb());
+		Crafter crafter = new Crafter(data, null, map, inventory, crafterType, 0, index[0], index[1], true, image, map.createNewSymb(), null);
+		map.addNewMachine(crafter);
 		map.setTile(crafter, index[0], index[1]);
 		crafter.initialiseCrafer();
 		inventory.deleteObj(this, 1);

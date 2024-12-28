@@ -24,10 +24,10 @@ public class BlockPotion extends Potion {
 
 	Color transparent = new Color(0, 0, 0, 0);
 
-	public BlockPotion(Data data, Map map, Inventory inventory, BufferedImage image, String name, int price, String symb, int time, int bonus){
+	public BlockPotion(Data data, Map map, Inventory inventory, BufferedImage image, String showName, int price, String symb, int time, int bonus){
 		super();
 		this.image = image;
-		this.name = name;
+		this.showName = showName;
 		this.price = price;
 		this.symb = symb;
 		this.time = time;
@@ -35,6 +35,7 @@ public class BlockPotion extends Potion {
 		this.bonus = bonus;
 		this.map = map;
 		this.inventory = inventory;
+		this.name = "BPOTION";
 
 		this.progressBar = new LinkedList<JProgressBar>();
 		this.count = new LinkedList<Integer>();

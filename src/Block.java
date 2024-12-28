@@ -21,6 +21,9 @@ public class Block extends Tile {
 	}
 
 	public TileType getType(){
+		if (image == null){
+			return TileType.NONE;
+		}
 		return ((collision) ? TileType.FLOOR : TileType.WALL);
 	}
 

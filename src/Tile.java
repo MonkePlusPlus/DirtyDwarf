@@ -3,13 +3,14 @@ import java.awt.image.BufferedImage;
 public abstract class Tile {
 
 	public enum TileType {
+		NONE,
 		WALL,
 		FLOOR,
 		RESSOURCE,
 		COLLECTER,
 		CRAFTER,
 		SHOP,
-		EXIT
+		SPAWN
 	}
 
 	public BufferedImage image;

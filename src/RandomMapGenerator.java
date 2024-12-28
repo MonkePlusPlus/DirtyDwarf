@@ -37,7 +37,7 @@ public class RandomMapGenerator {
 		}
 	}
 
-	public void createRandomMap(File file, String[] pack) {
+	public void createRandomMap(File level, File sauvegarde, String[] pack) {
 		int nbRoom = random.nextInt(5, 6);
 		Rectangle rectangle;
 		int index = 0;
@@ -76,7 +76,7 @@ public class RandomMapGenerator {
 		fillPlayerShop();
 		fillObj();
 		fillWall();
-		fillFile(file, pack[1], pack[2]);
+		fillFile(level, sauvegarde, pack[1], pack[2]);
 	}
 
 	public void connectRooms(Rectangle rect1, Rectangle rect2) {
@@ -300,31 +300,33 @@ public class RandomMapGenerator {
 		}
 	}
 
-	private void fillFile(File file, String object, String recipe){
+	private void fillFile(File level, File save, String object, String recipe){
 		try {
-			FileWriter fileWriter = new FileWriter(file);
+			FileWriter levelWriter = new FileWriter(level);
+			FileWriter saveWriter = new FileWriter(save);
 
 			for (int y = 0; y < maxY; y++){
 				for (int x = 0; x < maxX; x++){
 					if (x == maxX - 1){
-						fileWriter.write(map[y][x] + "\n");
+						levelWriter.write(map[y][x] + "\n");
 					} else {
-						fileWriter.write(map[y][x] + " ");
+						levelWriter.write(map[y][x] + " ");
 					}
 				}
 			}
-			fileWriter.write("ENDMAP\n" +
-							object + 
+			levelWriter.write("ENDMAP\n");
+
+			saveWriter.write(object + 
 							recipe + 
 							"ENDOBJ\n" + 
 							"inventaire:\n" + 
 							"money:0\n" + 
-							"machine:\n" + 
 							"ENDINV\n" + 
 							"collecter:\n" + 
 							"crafter:\n" + 
 							"ENDMACHINE\n");
-			fileWriter.close();
+			levelWriter.close();
+			saveWriter.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

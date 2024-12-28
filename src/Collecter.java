@@ -239,6 +239,7 @@ public class Collecter extends Block {
 						collectObject();
 					}
 					object = s.obj;
+					number = 0;
 					updateCollecter(s.nb);
 				}
 				removeModifyPane();
@@ -267,7 +268,6 @@ public class Collecter extends Block {
 			}
 		}
 		collectButton.setIcon(new ImageIcon(new ImageIcon(object.image).getImage().getScaledInstance(data.size * 3, data.size * 3, Image.SCALE_DEFAULT)));
-		number = 0;
 		count = 0;
 		progressBar.setValue(0);
 		progressBar.setMaximum(object.time);
@@ -352,6 +352,10 @@ public class Collecter extends Block {
 		data.key.move = true;
 		data.panel.revalidate();
 		data.panel.requestFocusInWindow();
+	}
+
+	public String machineToString(){
+		return symb + "_" + object.symb + "_" + number;
 	}
 
 	@Override

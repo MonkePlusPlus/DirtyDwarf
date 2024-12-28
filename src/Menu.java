@@ -64,10 +64,10 @@ public class Menu extends JPanel {
 		setBounds(0, 0, data.width, data.height);
 		texturePack = new String[3];
 		texturePack[0] = "pack1.png";
-		texturePack[1] = "objet:FER_F_5_10_2;OR_O_5_10_1;DIAMANT_D_20_100_1\n";
-		texturePack[2] = "recette:LINGOT DE FER_3-FER_0_20;LINGOT D'OR_3-OR_0_20;LINGOT DE DIAMANT_3-DIAMANT_10_100;" + 
-						 "EPEE_5-LINGOT D'OR+5-LINGOT DE FER_10_40;BOUCLIER_10-LINGOT D'OR+10-LINGOT DE FER_20_80;" + 
-						 "BIJOU_30-LINGOT D'OR+1-LINGOT DE DIAMANT_40_250;CASQUE_50-LINGOT D'OR+50-LINGOT DE FER+20-LINGOT DE DIAMANT_120_1000\n";
+		texturePack[1] = "objet:FER_F_5_2_2;OR_O_5_2_1;DIAMANT_D_2_10_1\n";
+		texturePack[2] = "recette:LINGOT DE FER_3-FER_0_20;LINGOT D'OR_3-OR_0_20;LINGOT DE DIAMANT_3-DIAMANT_10_50;" + 
+						 "EPEE_5-LINGOT D'OR+5-LINGOT DE FER_10_150;BOUCLIER_10-LINGOT D'OR+10-LINGOT DE FER_20_500;" + 
+						 "BIJOU_30-LINGOT D'OR+1-LINGOT DE DIAMANT_40_800;CASQUE_50-LINGOT D'OR+50-LINGOT DE FER+20-LINGOT DE DIAMANT_120_3500\n";
 	}
 
 	public void update(){
@@ -209,7 +209,7 @@ public class Menu extends JPanel {
 					File[] levels = file.listFiles();
 					System.out.println("map name : " + levels[0].getName());
 					data.panel.removeAll();
-					initializeLevel(levels[0]);
+					initializeLevel(file);
 					data.running = true;
 				}
 			});
@@ -337,9 +337,11 @@ public class Menu extends JPanel {
 					try {
 						File level = new File("save/" + file.getName() + "/level1.txt");
 						level.createNewFile();
-						mapGenerator.createRandomMap(level, texturePack);
+						File save = new File("save/" + file.getName() + "/save.txt");
+						save.createNewFile();
+						mapGenerator.createRandomMap(level, save, texturePack);
 						data.panel.removeAll();
-						initializeLevel(level);
+						initializeLevel(file);
 						data.running = true;
 					} catch (IOException e1) {
 						e1.printStackTrace();
@@ -384,7 +386,8 @@ public class Menu extends JPanel {
 		this.player = new Player(data);
 		this.inventory = new Inventory(data, player);
 		this.map = new Map(data, fileMap, inventory, player, texturePack);
-		this.menuPause = new MenuPause(data);
+		this.inventory.setMap(map);
+		this.menuPause = new MenuPause(data, map);
 
 		player.initializePlayer();
 		map.initializeMap();

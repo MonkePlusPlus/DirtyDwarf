@@ -49,6 +49,8 @@ public class Crafter extends Block {
 	private Recipe recipe;
 	private Slot[] objects;
 
+	private String[] nbObj;
+
 	private JLayeredPane mainPane;
 	private JLayeredPane modifyPane;
 	private JPanel backModiPane;
@@ -73,12 +75,14 @@ public class Crafter extends Block {
 	Color myColor = new Color(255, 255, 255, 150);
 	Color transparent = new Color(0, 0, 0, 0);
 
-	public Crafter(Data data, Recipe recipe, Map map, Inventory inventory, CrafterType type, int x, int y, boolean collision, BufferedImage image, String symb) {
+	public Crafter(Data data, Recipe recipe, Map map, Inventory inventory, CrafterType type, int number, int x, int y, boolean collision, BufferedImage image, String symb, String[] nbObj) {
 		super(data, x, y, symb, collision, image);
 		this.type = type;
 		this.map = map;
 		this.recipe = recipe;
 		this.inventory = inventory;
+		this.nbObj = nbObj;
+		this.number = number;
 		this.panelWidth = data.width / 2;
 		this.panelHeight = data.height / 2;
 		this.modifWidth = data.width / 5;
@@ -243,7 +247,11 @@ public class Crafter extends Block {
 		numberObj = new JTextArea[nbIngredient];
 		addButtons = new JButton[nbIngredient];
 		for (Slot s : recipe.ingredients) {
-			objects[index] = new Slot(s.obj, 0);
+			if (nbObj == null){
+				objects[index] = new Slot(s.obj, 0);
+			} else {
+				objects[index] = new Slot(s.obj, Integer.parseInt(nbObj[4 + index]));
+			}
 
 			JPanel back = new JPanel();
 			back.setFocusable(false);
@@ -505,6 +513,20 @@ public class Crafter extends Block {
 			i++;
 		}
 		updateAddPane();
+	}
+
+	public String machineToString(){
+		String rString = symb + "_" + ((type == CrafterType.NORMAL) ? "N" : "P") + "_" + recipe.name + "_" + number + "_";
+		int i = 0;
+		for (Slot s : objects){
+			if (i == objects.length - 1){
+				rString = rString + s.nb;
+			} else {
+				rString = rString + s.nb + "_";
+			}
+			i++;
+		}
+		return rString;
 	}
 
 	@Override

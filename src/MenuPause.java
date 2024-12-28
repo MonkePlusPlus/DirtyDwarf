@@ -3,6 +3,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -11,6 +12,7 @@ import javax.swing.JTextArea;
 public class MenuPause extends JPanel {
 	
 	private Data data;
+	private Map map;
 
 	private JButton pausButton;
 	private JButton contButton;
@@ -23,9 +25,10 @@ public class MenuPause extends JPanel {
 	private JTextArea title;
 	Color myColor = new Color(0, 0, 0, 100);
 
-	public MenuPause(Data data){
+	public MenuPause(Data data, Map map){
 		super();
 		this.data = data;
+		this.map = map;
 		this.setBackground(myColor);
 		this.setOpaque(false);
 		this.setBounds(0, 0, data.width, data.height);
@@ -66,6 +69,16 @@ public class MenuPause extends JPanel {
 		sauvButton = createButton("SAVE", data.width / 3, (data.height / 6) * 3);
 		optiButton = createButton("OPTION", data.width / 3, (data.height / 6) * 4);
 		quitButton = createButton("QUIT", data.width / 3, (data.height / 6) * 5);
+
+		sauvButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e){
+				try {
+					map.saveMap();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
 
 		quitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e){

@@ -99,13 +99,3 @@
 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 ENDMAP
-objet:FER_F_5_10_2;OR_O_5_10_1;DIAMANT_D_20_100_1
-recette:LINGOT DE FER_3-FER_0_20;LINGOT D'OR_3-OR_0_20;LINGOT DE DIAMANT_3-DIAMANT_10_100;EPEE_5-LINGOT D'OR+5-LINGOT DE FER_10_40;BOUCLIER_10-LINGOT D'OR+10-LINGOT DE FER_20_80;BIJOU_30-LINGOT D'OR+1-LINGOT DE DIAMANT_40_250;CASQUE_50-LINGOT D'OR+50-LINGOT DE FER+20-LINGOT DE DIAMANT_120_1000
-ENDOBJ
-inventaire:
-money:0
-machine:
-ENDINV
-collecter:
-crafter:
-ENDMACHINE

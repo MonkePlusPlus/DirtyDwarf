@@ -9,6 +9,7 @@ public abstract class Potion extends Object {
 	}
 
 	public Timer timer;
+	public String showName;
 
 	public abstract void usePotion();
 

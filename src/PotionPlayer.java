@@ -15,10 +15,11 @@ public class PotionPlayer extends Potion {
 	private int bonus;
 	private JProgressBar progressBar;
 
-	public PotionPlayer(Data data, Player player, Inventory inventory, BufferedImage image, String name, int price, String symb, int time, int bonus){
+	public PotionPlayer(Data data, Player player, Inventory inventory, BufferedImage image, String showName, int price, String symb, int time, int bonus){
 		super();
 		this.image = image;
-		this.name = name;
+		this.showName = showName;
+		this.name = "PPOTION";
 		this.price = price;
 		this.symb = symb;
 		this.time = time;
@@ -29,7 +30,7 @@ public class PotionPlayer extends Potion {
 		progressBar = new JProgressBar(0, time * 10);
 		progressBar.setStringPainted(true);
 		progressBar.setForeground(Color.BLUE);
-		progressBar.setString(name);
+		progressBar.setString(showName);
 		progressBar.setBounds(data.width / 2 + data.width / 12, data.height / 40, data.width / 6, data.height / 20);
 		progressBar.setVisible(true);
 	}

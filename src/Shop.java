@@ -545,6 +545,22 @@ public class Shop extends Block {
 		return (data.menuPanel.isAncestorOf(mainPane));
 	}
 
+	public BufferedImage getCollecImg(){
+		return collectImg;
+	}
+	public BufferedImage getCraftNImg(){
+		return craftNImg;
+	}
+	public BufferedImage getCraftPImg(){
+		return craftPImg;
+	}
+	public BufferedImage getPotionBImg(){
+		return potionMImg;
+	}
+	public BufferedImage getPotionPImg(){
+		return potionPImg;
+	}
+
 	@Override
 	public void mouseClick(){
 		if (data.key.editMode == false && touchClose() && timerClick.isRunning() == false){

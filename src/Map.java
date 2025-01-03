@@ -125,7 +125,16 @@ public class Map extends JPanel {
 			initializeTileMap(i);
 			initializePos(i);
 		}
+		initialiseMiniMaps();
 		return true;
+	}
+
+	public void initialiseMiniMaps(){
+		miniMaps = new MiniMap[nbLevel];
+		for (int i = 0; i < nbLevel; i++){
+			miniMaps[i] = new MiniMap(data, player, this, lenX, lenY, startPosX, startPosY);
+			miniMaps[i].initialiseMiniMap(tileMap[i]);
+		}
 	}
 
 	public void initializePos(int index){
@@ -536,10 +545,14 @@ public class Map extends JPanel {
 			shop.removeShopButton();
 			inventory.removeInvButton();
 			data.clearMenuPanel();
+			miniMaps[levelIndex].removeButtonMiniMap();
 		}
 		else {
 			inventory.showInvButton();
 			shop.showShopButton();
+			if (!data.menuPanel.isAncestorOf(miniMaps[levelIndex]) && data.windowOpen == false){
+				data.menuPanel.add(miniMaps[levelIndex]);
+			}
 		}
 		if (data.key.up && data.key.move){
 			moveUp();
@@ -596,6 +609,7 @@ public class Map extends JPanel {
 				b.moveBlockY(data.speed);
 			}
 		}
+		player.posY += data.speed;
 		updateY += data.speed;
 	}
 
@@ -606,6 +620,7 @@ public class Map extends JPanel {
 				b.moveBlockY(-data.speed);
 			}
 		}
+		player.posY -= data.speed;
 		updateY -= data.speed;
 	}
 
@@ -616,6 +631,7 @@ public class Map extends JPanel {
 				b.moveBlockX(data.speed);
 			}
 		}
+		player.posX += data.speed;
 		updateX += data.speed;
 	}
 
@@ -626,6 +642,7 @@ public class Map extends JPanel {
 				b.moveBlockX(-data.speed);
 			}
 		}
+		player.posX -= data.speed;
 		updateX -= data.speed;
 	}
 

@@ -7,8 +7,8 @@ import javax.imageio.ImageIO;
 public class Player {
 
 	private Data data;
-	private int x;
-	private int y;
+	public int x;
+	public int y;
 	public int posX;
 	public int posY;
 	public int bonus = 1;

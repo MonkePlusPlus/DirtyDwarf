@@ -14,7 +14,6 @@ public class MiniMap extends JPanel {
 	private Map map;
 	private Player player;
 
-	private JPanel miniBackgroundPane;
 	private boolean[][] miniMap;
 	private JButton button;
 
